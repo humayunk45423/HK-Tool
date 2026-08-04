@@ -190,21 +190,75 @@ function Calc-HardwareBaseValue {
     </Style>
 
     <Style x:Key="DarkCombo" TargetType="ComboBox">
-      <Setter Property="Background"     Value="#111111"/>
-      <Setter Property="Foreground"     Value="#E0E0E0"/>
-      <Setter Property="BorderBrush"    Value="#2A2A2A"/>
-      <Setter Property="FontSize"       Value="13"/>
-      <Setter Property="Padding"        Value="10,8"/>
+      <Setter Property="Background" Value="#111111"/>
+      <Setter Property="Foreground" Value="#E0E0E0"/>
+      <Setter Property="BorderBrush" Value="#2A2A2A"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Padding" Value="10,8"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ComboBox">
+            <Grid>
+              <ToggleButton x:Name="ToggleButton" 
+                            Focusable="false"
+                            IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
+                            ClickMode="Press">
+                <ToggleButton.Template>
+                  <ControlTemplate TargetType="ToggleButton">
+                    <Border Background="#111111" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="4">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition />
+                          <ColumnDefinition Width="30" />
+                        </Grid.ColumnDefinitions>
+                        <Path Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                              Data="M 0 0 L 4 4 L 8 0 Z" Fill="#808080" />
+                      </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#1A1A1A" TargetName="ToggleButton" />
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </ToggleButton.Template>
+              </ToggleButton>
+              <ContentPresenter x:Name="ContentSite"
+                                IsHitTestVisible="False" 
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                Margin="12,10,30,10"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left" />
+              <Popup x:Name="Popup" 
+                     Placement="Bottom"
+                     IsOpen="{TemplateBinding IsDropDownOpen}"
+                     AllowsTransparency="True" 
+                     Focusable="False"
+                     PopupAnimation="Slide">
+                <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                  <Border x:Name="DropDownBorder" Background="#1A1A1A" BorderThickness="1" BorderBrush="#2A2A2A" CornerRadius="4" Margin="0,4,0,0"/>
+                  <ScrollViewer Margin="1,5,1,1" SnapsToDevicePixels="True">
+                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                  </ScrollViewer>
+                </Grid>
+              </Popup>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
       <Setter Property="ItemContainerStyle">
         <Setter.Value>
           <Style TargetType="ComboBoxItem">
-            <Setter Property="Background" Value="#111111"/>
+            <Setter Property="Background" Value="#1A1A1A"/>
             <Setter Property="Foreground" Value="#E0E0E0"/>
-            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Padding" Value="12,10"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Style.Triggers>
               <Trigger Property="IsHighlighted" Value="True">
-                <Setter Property="Background" Value="#2A2A2A"/>
+                <Setter Property="Background" Value="#333333"/>
               </Trigger>
             </Style.Triggers>
           </Style>
