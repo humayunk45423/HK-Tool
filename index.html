@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Humayoun Tool — বিক্রির/ আগে সত্যিটা জানুন</title>
+  <meta name="description" content="Windows laptop and desktop diagnostic and honest resale price estimator.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Baloo+Da+2:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F5FAF7;
+      --surface: #FFFFFF;
+      --surface-alt: #EAF3ED;
+      --ink: #13251F;
+      --ink-soft: #4B5D55;
+      --ink-faint: #7C8B84;
+      --accent: #1C7A54;
+      --accent-deep: #125C3E;
+      --accent-tint: #DCEEE3;
+      --price: #C97A2E;
+      --price-tint: #F7E7D3;
+      --flag: #C24C42;
+      --border: #DCE8E1;
+      --radius-sm: 10px;
+      --radius-md: 18px;
+      --radius-lg: 28px;
+      --radius-pill: 999px;
+    }
+
+    html[data-lang="bn"] {
+      --font-display: 'Baloo Da 2', 'Baloo 2', sans-serif;
+      --font-body: 'Hind Siliguri', 'Nunito Sans', sans-serif;
+    }
+
+    html[data-lang="en"] {
+      --font-display: 'Baloo 2', sans-serif;
+      --font-body: 'Nunito Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    .display {
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+
+    /* ---------- Nav ---------- */
+    nav.top {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(245, 250, 247, 0.88);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav.top .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+
+    .brand .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      background: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .brand .ver {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--ink-faint);
+      background: var(--surface-alt);
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lang-toggle {
+      display: flex;
+      background: var(--surface-alt);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-toggle button {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      background: transparent;
+      color: var(--ink-soft);
+      padding: 7px 16px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+
+    .lang-toggle button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .gh-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      transition: border-color .2s, color .2s;
+    }
+
+    .gh-link:hover {
+      border-color: var(--accent);
+      color: var(--accent-deep);
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      padding: 72px 0 40px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent-deep);
+      background: var(--accent-tint);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 4.6vw, 3.4rem);
+      line-height: 1.12;
+      margin-bottom: 20px;
+    }
+
+    .sub {
+      font-size: 1.08rem;
+      color: var(--ink-soft);
+      max-width: 46ch;
+      margin-bottom: 32px;
+    }
+
+    .cmd-block {
+      background: var(--ink);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .cmd-block code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.92rem;
+      color: #EAF7EF;
+      flex: 1;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 9px 18px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .15s, transform .1s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent-deep);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.96);
+    }
+
+    .cmd-note {
+      font-size: 0.85rem;
+      color: var(--ink-faint);
+    }
+
+    /* ---------- Scorecard (signature element) ---------- */
+    .scorecard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: 0 20px 50px -30px rgba(18, 92, 62, 0.35);
+    }
+
+    .scorecard .tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-faint);
+      margin-bottom: 18px;
+    }
+
+    .ring-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 112px;
+      height: 112px;
+      flex-shrink: 0;
+    }
+
+    .ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+
+    .ring-wrap .ring-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring-num .score {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: var(--ink);
+    }
+
+    .ring-num .of {
+      font-size: 0.68rem;
+      color: var(--ink-faint);
+    }
+
+    .ring-label {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 4px;
+    }
+
+    .ring-sub {
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+    }
+
+    .bars {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.86rem;
+      margin-bottom: 6px;
+    }
+
+    .bar-track {
+      height: 7px;
+      background: var(--surface-alt);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: var(--radius-pill);
+      width: 0%;
+      transition: width 1.1s cubic-bezier(.3, .9, .4, 1);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    .price-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .price-row .lbl {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+    }
+
+    .price-row .val {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--price);
+    }
+
+    /* ---------- How it works ---------- */
+    .section {
+      padding: 88px 0;
+    }
+
+    .section-head {
+      max-width: 56ch;
+      margin-bottom: 48px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      margin-bottom: 12px;
+    }
+
+    .section-head p {
+      color: var(--ink-soft);
+      font-size: 1rem;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+    }
+
+    .step .n {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .step h3 {
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      color: var(--ink-soft);
+      font-size: 0.93rem;
+    }
+
+    /* ---------- Checks grid ---------- */
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .check {
+      background: var(--surface-alt);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .check .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+
+    .check h4 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.98rem;
+      margin-bottom: 4px;
+    }
+
+    .check p {
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+    }
+
+    /* ---------- Trust ---------- */
+    .trust {
+      background: var(--ink);
+      color: #EAF7EF;
+      border-radius: var(--radius-lg);
+      padding: 56px;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .trust h2 {
+      color: #fff;
+      font-size: clamp(1.5rem, 2.8vw, 2rem);
+      margin-bottom: 16px;
+    }
+
+    .trust p {
+      color: #B9D6C6;
+      font-size: 0.97rem;
+      max-width: 52ch;
+    }
+
+    .trust-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-light {
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      background: #fff;
+      color: var(--ink);
+      padding: 14px 20px;
+      border-radius: var(--radius-pill);
+      font-size: 0.95rem;
+      transition: transform .15s;
+    }
+
+    .btn-light:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-decoration: none;
+      text-align: center;
+      border: 1px solid #2E4A3E;
+      color: #EAF7EF;
+      padding: 13px 20px;
+      border-radius: var(--radius-pill);
+      font-size: 0.95rem;
+    }
+
+    /* ---------- Footer ---------- */
+    footer {
+      padding: 40px 0 60px;
+    }
+
+    footer .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--ink-faint);
+      border-top: 1px solid var(--border);
+      padding-top: 28px;
+    }
+
+    @media (max-width:860px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 36px;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .checks {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .trust {
+        grid-template-columns: 1fr;
+        padding: 36px 24px;
+      }
+    }
+
+    @media (max-width:560px) {
+      .checks {
+        grid-template-columns: 1fr;
+      }
+
+      nav.top .row {
+        padding: 14px 18px;
+      }
+
+      .brand .ver {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .bar-fill {
+        transition: none;
+      }
+
+      .btn-light:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="top">
+    <div class="row">
+      <div class="brand"><span class="mark">হ</span><span data-en="Humayoun Tool" data-bn="হুমায়ূন টুল">হুমায়ূন
+          টুল</span><span class="ver">v1</span></div>
+      <div class="nav-actions">
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button id="btn-bn" class="active" onclick="setLang('bn')">বাং</button>
+          <button id="btn-en" onclick="setLang('en')">EN</button>
+        </div>
+        <a class="gh-link" href="https://github.com/humayunk45423/HK-Tool" target="_blank" rel="noopener">
+          <span data-en="GitHub" data-bn="গিটহাব">গিটহাব</span> ↗
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow" data-en="For Windows laptops & desktops"
+          data-bn="উইন্ডোজ ল্যাপটপ ও ডেস্কটপের জন্য">উইন্ডোজ ল্যাপটপ ও ডেস্কটপের জন্য</span>
+        <h1 data-en="Know the truth, before you sell" data-bn="বিক্রির আগে, সত্যিটা জানুন">বিক্রির আগে, সত্যিটা জানুন
+        </h1>
+        <p class="sub"
+          data-en="One command scans your battery, storage, and hardware health — then prices your device against real market data. No guessing, no sugarcoating."
+          data-bn="একটি কমান্ডেই আপনার ব্যাটারি, স্টোরেজ ও হার্ডওয়্যারের স্বাস্থ্য পরীক্ষা হবে — এরপর প্রকৃত বাজারদর অনুযায়ী দাম নির্ধারণ। কোনো অনুমান নয়, কোনো মিষ্টি কথা নয়।">
+          একটি কমান্ডেই আপনার ব্যাটারি, স্টোরেজ ও হার্ডওয়্যারের স্বাস্থ্য পরীক্ষা হবে — এরপর প্রকৃত বাজারদর অনুযায়ী
+          দাম নির্ধারণ। কোনো অনুমান নয়, কোনো মিষ্টি কথা নয়।</p>
+
+        <div class="cmd-block">
+          <code id="cmd-text">irm hktool.vercel.app/i | iex</code>
+          <button class="copy-btn" onclick="copyCmd(this)" data-en="Copy" data-bn="কপি করুন">কপি করুন</button>
+        </div>
+        <div class="cmd-note" data-en="Run in PowerShell as Administrator"
+          data-bn="অ্যাডমিনিস্ট্রেটর হিসেবে PowerShell-এ চালান">অ্যাডমিনিস্ট্রেটর হিসেবে PowerShell-এ চালান</div>
+      </div>
+
+      <div class="scorecard">
+        <div class="tag" data-en="Example report" data-bn="উদাহরণ রিপোর্ট">উদাহরণ রিপোর্ট</div>
+        <div class="ring-row">
+          <div class="ring-wrap">
+            <svg width="112" height="112" viewBox="0 0 112 112">
+              <circle cx="56" cy="56" r="48" fill="none" stroke="#DCE8E1" stroke-width="10" />
+              <circle id="ring-fg" cx="56" cy="56" r="48" fill="none" stroke="#1C7A54" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="301.6" stroke-dashoffset="301.6" />
+            </svg>
+            <div class="ring-num">
+              <span class="score num" data-num="82">৮২</span>
+              <span class="of num" data-num="/100">/১০০</span>
+            </div>
+          </div>
+          <div>
+            <div class="ring-label" data-en="Good condition" data-bn="ভালো অবস্থা">ভালো অবস্থা</div>
+            <div class="ring-sub" data-en="Dell Latitude 5490" data-bn="Dell Latitude 5490">Dell Latitude 5490</div>
+          </div>
+        </div>
+
+        <div class="bars">
+          <div>
+            <div class="bar-row"><span data-en="Battery health" data-bn="ব্যাটারি স্বাস্থ্য">ব্যাটারি
+                স্বাস্থ্য</span><span class="num" data-num="78%">৭৮%</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" data-target="78"></div>
+            </div>
+          </div>
+          <div>
+            <div class="bar-row"><span data-en="Storage" data-bn="স্টোরেজ">স্টোরেজ</span><span data-en="Healthy"
+                data-bn="সুস্থ">সুস্থ</span></div>
+            <div class="bar-track">
+              <div class="bar-fill" data-target="94"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="price-row">
+          <span class="lbl" data-en="Fair price range" data-bn="সঠিক মূল্য পরিসীমা">সঠিক মূল্য পরিসীমা</span>
+          <span class="val num" data-num="৳28,500 – ৳32,000">৳২৮,৫০০ – ৳৩২,০০০</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <h2 data-en="How it works" data-bn="যেভাবে কাজ করে">যেভাবে কাজ করে</h2>
+      <p data-en="Three steps, no manual, no setup screens."
+        data-bn="তিনটি ধাপ, কোনো ম্যানুয়াল নেই, কোনো সেটআপ স্ক্রিন নেই।">তিনটি ধাপ, কোনো ম্যানুয়াল নেই, কোনো সেটআপ
+        স্ক্রিন নেই।</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="n">০১</div>
+        <h3 data-en="Paste the command" data-bn="কমান্ডটি পেস্ট করুন">কমান্ডটি পেস্ট করুন</h3>
+        <p data-en="One line in PowerShell. No installer, no download page."
+          data-bn="PowerShell-এ একটি মাত্র লাইন। কোনো ইনস্টলার নেই, কোনো ডাউনলোড পেজ নেই।">PowerShell-এ একটি মাত্র লাইন।
+          কোনো ইনস্টলার নেই, কোনো ডাউনলোড পেজ নেই।</p>
+      </div>
+      <div class="step">
+        <div class="n">০২</div>
+        <h3 data-en="The tool scans itself" data-bn="যন্ত্র নিজেই পরীক্ষা করে">যন্ত্র নিজেই পরীক্ষা করে</h3>
+        <p data-en="Battery cycles, storage wear, CPU and GPU — then a short honest condition survey."
+          data-bn="ব্যাটারি চক্র, স্টোরেজের ক্ষয়, সিপিইউ ও জিপিইউ — এরপর একটি সংক্ষিপ্ত সৎ অবস্থা জরিপ।">ব্যাটারি চক্র,
+          স্টোরেজের ক্ষয়, সিপিইউ ও জিপিইউ — এরপর একটি সংক্ষিপ্ত সৎ অবস্থা জরিপ।</p>
+      </div>
+      <div class="step">
+        <div class="n">০৩</div>
+        <h3 data-en="Get an honest price" data-bn="সৎ দাম পান">সৎ দাম পান</h3>
+        <p data-en="Real health score × real condition × real market benchmark — a range, not a guess."
+          data-bn="প্রকৃত স্বাস্থ্য স্কোর × প্রকৃত অবস্থা × প্রকৃত বাজারদর — একটি পরিসীমা, কোনো অনুমান নয়।">প্রকৃত
+          স্বাস্থ্য স্কোর × প্রকৃত অবস্থা × প্রকৃত বাজারদর — একটি পরিসীমা, কোনো অনুমান নয়।</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <h2 data-en="What it checks" data-bn="যা যা পরীক্ষা করে">যা যা পরীক্ষা করে</h2>
+      <p data-en="Every reading comes from the machine itself, not from what a seller says."
+        data-bn="প্রতিটি তথ্য আসে মেশিন থেকে সরাসরি, বিক্রেতার কথা থেকে নয়।">প্রতিটি তথ্য আসে মেশিন থেকে সরাসরি,
+        বিক্রেতার কথা থেকে নয়।</p>
+    </div>
+    <div class="checks">
+      <div class="check">
+        <div class="dot"></div>
+        <div>
+          <h4 data-en="Battery health & cycles" data-bn="ব্যাটারি স্বাস্থ্য ও চক্র">ব্যাটারি স্বাস্থ্য ও চক্র</h4>
+          <p data-en="Design vs. current capacity, cycle count." data-bn="ডিজাইন বনাম বর্তমান ক্যাপাসিটি, চক্র সংখ্যা।">
+            ডিজাইন বনাম বর্তমান ক্যাপাসিটি, চক্র সংখ্যা।</p>
+        </div>
+      </div>
+      <div class="check">
+        <div class="dot"></div>
+        <div>
+          <h4 data-en="Storage & SSD wear" data-bn="স্টোরেজ ও SSD ক্ষয়">স্টোরেজ ও SSD ক্ষয়</h4>
+          <p data-en="Drive health status and wear level." data-bn="ড্রাইভের স্বাস্থ্য অবস্থা ও ক্ষয়ের মাত্রা।">
+            ড্রাইভের স্বাস্থ্য অবস্থা ও ক্ষয়ের মাত্রা।</p>
+        </div>
+      </div>
+      <div class="check">
+        <div class="dot"></div>
+        <div>
+          <h4 data-en="CPU & GPU identity" data-bn="প্রসেসর ও গ্রাফিক্স">প্রসেসর ও গ্রাফিক্স</h4>
+          <p data-en="Exact model, not what the listing claims." data-bn="সঠিক মডেল, লিস্টিং যা দাবি করে তা নয়।">সঠিক
+            মডেল, লিস্টিং যা দাবি করে তা নয়।</p>
+        </div>
+      </div>
+      <div class="check">
+        <div class="dot"></div>
+        <div>
+          <h4 data-en="RAM & specs" data-bn="RAM ও স্পেসিফিকেশন">RAM ও স্পেসিফিকেশন</h4>
+          <p data-en="Installed memory, not advertised memory." data-bn="ইনস্টল করা মেমরি, বিজ্ঞাপিত মেমরি নয়।">ইনস্টল
+            করা মেমরি, বিজ্ঞাপিত মেমরি নয়।</p>
+        </div>
+      </div>
+      <div class="check">
+        <div class="dot"></div>
+        <div>
+          <h4 data-en="Screen & body condition" data-bn="স্ক্রিন ও বডির অবস্থা">স্ক্রিন ও বডির অবস্থা</h4>
+          <p data-en="A guided survey — no jargon, just questions."
+            data-bn="একটি নির্দেশিত জরিপ — কোনো পরিভাষা নেই, শুধু প্রশ্ন।">একটি নির্দেশিত জরিপ — কোনো পরিভাষা নেই, শুধু
+            প্রশ্ন।</p>
+        </div>
+      </div>
+      <div class="check">
+        <div class="dot"></div>
+        <div>
+          <h4 data-en="Estimated manufacture date" data-bn="তৈরির আনুমানিক তারিখ">তৈরির আনুমানিক তারিখ</h4>
+          <p data-en="From BIOS data, to gauge real age." data-bn="BIOS তথ্য থেকে, প্রকৃত বয়স বোঝার জন্য।">BIOS তথ্য
+            থেকে, প্রকৃত বয়স বোঝার জন্য।</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="trust">
+      <div>
+        <h2 data-en="Not a guess. Evidence." data-bn="অনুমান নয়, প্রমাণ।">অনুমান নয়, প্রমাণ।</h2>
+        <p data-en="The score comes from real sensors, the condition comes from your honest answers, and the price comes from a transparent formula — not a black box. The full source is on GitHub, so anyone can check the math."
+          data-bn="স্কোর আসে প্রকৃত সেন্সর থেকে, অবস্থা আসে আপনার সৎ উত্তর থেকে, আর দাম আসে একটি স্বচ্ছ সূত্র থেকে — কোনো ব্ল্যাক বক্স নয়। সম্পূর্ণ সোর্স কোড গিটহাবে আছে, যে কেউ হিসাব যাচাই করতে পারবেন।">
+          স্কোর আসে প্রকৃত সেন্সর থেকে, অবস্থা আসে আপনার সৎ উত্তর থেকে, আর দাম আসে একটি স্বচ্ছ সূত্র থেকে — কোনো ব্ল্যাক
+          বক্স নয়। সম্পূর্ণ সোর্স কোড গিটহাবে আছে, যে কেউ হিসাব যাচাই করতে পারবেন।</p>
+      </div>
+      <div class="trust-actions">
+        <a class="btn-light" href="https://github.com/humayunk45423/HK-Tool" target="_blank" rel="noopener" data-en="View source on GitHub"
+          data-bn="গিটহাবে সোর্স দেখুন">গিটহাবে সোর্স দেখুন</a>
+        <a class="btn-outline" href="#" onclick="copyCmd(this); return false;" data-en="Copy install command"
+          data-bn="ইনস্টল কমান্ড কপি করুন">ইনস্টল কমান্ড কপি করুন</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    <div class="row">
+      <span data-en="Humayoun Tool · Open source · Hosted on Vercel"
+        data-bn="হুমায়ূন টুল · ওপেন সোর্স · Vercel-এ হোস্ট করা">হুমায়ূন টুল · ওপেন সোর্স · Vercel-এ হোস্ট করা</span>
+      <span data-en="Windows only, for now" data-bn="আপাতত শুধু উইন্ডোজ">আপাতত শুধু উইন্ডোজ</span>
+    </div>
+  </footer>
+
+  <script>
+    const bnDigits = { '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪', '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯' };
+    function toBn(str) { return str.replace(/[0-9]/g, d => bnDigits[d]); }
+
+    function setLang(lang) {
+      document.documentElement.lang = lang;
+      document.documentElement.dataset.lang = lang;
+      document.querySelectorAll('[data-en]').forEach(el => {
+        el.textContent = lang === 'bn' ? el.getAttribute('data-bn') : el.getAttribute('data-en');
+      });
+      document.querySelectorAll('.num[data-num]').forEach(el => {
+        const orig = el.getAttribute('data-num');
+        el.textContent = lang === 'bn' ? toBn(orig) : orig;
+      });
+      document.getElementById('btn-bn').classList.toggle('active', lang === 'bn');
+      document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+      try { localStorage.setItem('humayoun-lang', lang); } catch (e) { }
+    }
+
+    function copyCmd(btn) {
+      const text = document.getElementById('cmd-text').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = btn.hasAttribute('data-en') ? (document.documentElement.lang === 'bn' ? 'কপি হয়েছে' : 'Copied') : orig;
+        setTimeout(() => { btn.textContent = orig; }, 1600);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      let saved = 'bn';
+      try { saved = localStorage.getItem('humayoun-lang') || 'bn'; } catch (e) { }
+      setLang(saved);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          document.getElementById('ring-fg').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.3,.9,.4,1)';
+          document.getElementById('ring-fg').style.strokeDashoffset = 301.6 * (1 - 0.82);
+          document.querySelectorAll('.bar-fill').forEach(el => {
+            el.style.width = el.getAttribute('data-target') + '%';
+          });
+        }, 150);
+      });
+    });
+  </script>
+
+</body>
+
+</html>
