@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/i", "destination": "/i.ps1" }
+  ]
+}
