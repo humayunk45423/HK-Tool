@@ -206,7 +206,7 @@ function Calc-HardwareBaseValue {
                             ClickMode="Press">
                 <ToggleButton.Template>
                   <ControlTemplate TargetType="ToggleButton">
-                    <Border Background="#111111" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="4">
+                    <Border x:Name="Bd" Background="#111111" BorderBrush="#2A2A2A" BorderThickness="1" CornerRadius="4">
                       <Grid>
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition />
@@ -218,7 +218,7 @@ function Calc-HardwareBaseValue {
                     </Border>
                     <ControlTemplate.Triggers>
                       <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="#1A1A1A" TargetName="ToggleButton" />
+                        <Setter Property="Background" Value="#1A1A1A" TargetName="Bd" />
                       </Trigger>
                     </ControlTemplate.Triggers>
                   </ControlTemplate>
