@@ -1,5 +1,5 @@
 {
-  "rewrites": [
-    { "source": "/i", "destination": "/i.ps1" }
+  "routes": [
+    { "src": "/i", "dest": "/i.ps1" }
   ]
 }
