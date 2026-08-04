@@ -28,10 +28,77 @@ function Calc-Price {
     $diag  = ($batPct + $storScore) / 2
     $total = ($diag * 0.5 + $condScore * 0.5) / 100
     return @{
-        Min        = [math]::Round($base * $total * 0.85, -2)
-        Max        = [math]::Round($base * $total * 1.05, -2)
+        Min        = [math]::Round(($base * $total * 0.85) / 100) * 100
+        Max        = [math]::Round(($base * $total * 1.05) / 100) * 100
         OverallPct = [math]::Round($total * 100, 1)
     }
+}
+
+function Calc-HardwareBaseValue {
+    param($cpu, $ram, $gpus, $storDrives)
+    
+    $val = 5000 # Absolute minimum base value for a functioning PC/Laptop
+
+    # CPU Tier valuation
+    if ($cpu -match 'i3') { $val += 3000 }
+    elseif ($cpu -match 'i5') { $val += 6000 }
+    elseif ($cpu -match 'i7') { $val += 10000 }
+    elseif ($cpu -match 'i9') { $val += 16000 }
+    elseif ($cpu -match 'Ryzen 3') { $val += 4000 }
+    elseif ($cpu -match 'Ryzen 5') { $val += 7000 }
+    elseif ($cpu -match 'Ryzen 7') { $val += 12000 }
+    elseif ($cpu -match 'Ryzen 9') { $val += 18000 }
+    elseif ($cpu -match 'Apple M1') { $val += 35000 }
+    elseif ($cpu -match 'Apple M2') { $val += 50000 }
+    elseif ($cpu -match 'Apple M3') { $val += 70000 }
+
+    # CPU Generation Heuristic (Intel)
+    if ($cpu -match 'i\d-([23456789]|10|11|12|13|14)\d{3}') {
+        $gen = [int]$Matches[1]
+        $val += ($gen * 1500)
+    } 
+    # CPU Generation Heuristic (AMD Ryzen)
+    elseif ($cpu -match 'Ryzen \d \d(\d)\d{2}') {
+        $gen = [int]$Matches[1]
+        $val += ($gen * 2000)
+    }
+
+    # RAM valuation (approx 400 BDT per GB above 4GB base)
+    if ($ram -gt 4) {
+        $val += (($ram - 4) * 400)
+    }
+
+    # Storage valuation
+    $totalGB = 0
+    if ($storDrives) {
+        foreach ($d in $storDrives) {
+            $totalGB += $d.Size
+            if ($d.MediaType -match 'SSD') { $val += 1500 } # SSD bonus
+            if ($d.MediaType -match 'NVMe') { $val += 2500 } # NVMe bonus
+        }
+    }
+    if ($totalGB -gt 0) {
+        $val += ($totalGB * 12) # ~12 BDT per GB
+    }
+
+    # GPU valuation
+    if ($gpus -notmatch 'Intel.*Graphics|AMD Radeon.*Graphics|Integrated') {
+        if ($gpus -match 'RTX 40') { $val += 60000 }
+        elseif ($gpus -match 'RTX 30') { $val += 35000 }
+        elseif ($gpus -match 'RTX 20') { $val += 20000 }
+        elseif ($gpus -match 'GTX 16') { $val += 12000 }
+        elseif ($gpus -match 'GTX 10') { $val += 8000 }
+        elseif ($gpus -match 'RX 7\d{2}') { $val += 45000 }
+        elseif ($gpus -match 'RX 6\d{2}') { $val += 25000 }
+        else { $val += 6000 } # Generic discrete GPU
+    }
+
+    # Cap bounds
+    if ($val -lt 5000) { $val = 5000 }
+    if ($val -gt 400000) { $val = 400000 }
+
+    # Round to nearest 500 Tk
+    return [math]::Round($val / 500) * 500
 }
 
 # ---------------------------------------------------------------------------
@@ -128,6 +195,21 @@ function Calc-Price {
       <Setter Property="BorderBrush"    Value="#2A2A2A"/>
       <Setter Property="FontSize"       Value="13"/>
       <Setter Property="Padding"        Value="10,8"/>
+      <Setter Property="ItemContainerStyle">
+        <Setter.Value>
+          <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#111111"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+              <Trigger Property="IsHighlighted" Value="True">
+                <Setter Property="Background" Value="#2A2A2A"/>
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </Setter.Value>
+      </Setter>
     </Style>
 
     <Style x:Key="SlimBar" TargetType="ProgressBar">
@@ -446,17 +528,13 @@ function Calc-Price {
 
             <TextBlock Text="Resale Price Estimate" FontSize="20" FontWeight="Bold"
                        Foreground="#E8E8E8" Margin="0,0,0,6"/>
-            <TextBlock Text="Enter the typical used market price for this model in good condition."
+            <TextBlock Text="Based on real-time automated hardware valuation."
                        Style="{StaticResource BodyText}" Foreground="#505050" Margin="0,0,0,24"/>
 
-            <TextBlock Text="BASE MARKET PRICE (BDT)" Style="{StaticResource FieldLabel}"/>
-            <TextBox Name="TxtBasePrice" Style="{StaticResource DarkInput}" Width="240"
-                     HorizontalAlignment="Left" Margin="0,0,0,8"/>
-            <TextBlock Text="Check Bikroy.com for comparable listings." FontSize="11"
-                       Foreground="#383838" Margin="0,0,0,24"/>
-
-            <Button Name="BtnPrice" Content="Calculate Price"
-                    Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left" Margin="0,0,0,28"/>
+            <TextBlock Text="CALCULATED BASE HARDWARE VALUE (BDT)" Style="{StaticResource FieldLabel}"/>
+            <TextBlock Name="LblBasePrice" Style="{StaticResource BigNum}" Text="-- Tk" Foreground="#58D68D"/>
+            <TextBlock Text="Automatically determined from CPU, RAM, Storage, and GPU." FontSize="11"
+                       Foreground="#383838" Margin="0,0,0,28"/>
 
             <!-- Result card -->
             <Border Name="PriceCard" Style="{StaticResource Card}" Visibility="Collapsed">
@@ -530,8 +608,7 @@ $CboPorts      = $window.FindName('CboPorts')
 $CboWebcam     = $window.FindName('CboWebcam')
 $CboSpeakers   = $window.FindName('CboSpeakers')
 $BtnCondition  = $window.FindName('BtnCondition')
-$TxtBasePrice  = $window.FindName('TxtBasePrice')
-$BtnPrice      = $window.FindName('BtnPrice')
+$LblBasePrice  = $window.FindName('LblBasePrice')
 $PriceCard     = $window.FindName('PriceCard')
 $LblScore      = $window.FindName('LblScore')
 $LblScoreSub   = $window.FindName('LblScoreSub')
@@ -544,6 +621,7 @@ $script:StorDrives     = $null
 $script:SysInfo        = $null
 $script:ConditionScore = -1
 $script:dotCount       = 0
+$script:BaseHardwareValue = 0
 
 # ---------------------------------------------------------------------------
 # Scan button  --  FIXED: uses PowerShell.Create() + BeginInvoke() + DispatcherTimer
@@ -738,6 +816,10 @@ $BtnScan.Add_Click({
                 }
             }
 
+            # Calculate Automated Base Price
+            $script:BaseHardwareValue = Calc-HardwareBaseValue $r.Sys.CPU $r.Sys.RAM $r.Sys.GPU $r.Stor
+            $LblBasePrice.Text = "$("{0:N0}" -f $script:BaseHardwareValue) Tk"
+
             # Update status
             $now              = Get-Date -Format 'HH:mm'
             $StatusText.Text  = "Scan complete  $now"
@@ -759,51 +841,35 @@ $BtnScan.Add_Click({
 # Condition survey
 # ---------------------------------------------------------------------------
 $BtnCondition.Add_Click({
+    if (-not $script:BatInfo) {
+        [System.Windows.MessageBox]::Show(
+            'Run a full scan first (Overview tab) before calculating the estimate.',
+            'Scan required', 'OK', 'Warning')
+        return
+    }
+
     $combos = @($CboScreen, $CboBody, $CboKeyboard, $CboPorts, $CboWebcam, $CboSpeakers)
     $scores = foreach ($c in $combos) {
         if ($c.SelectedItem) { [int]$c.SelectedItem.Tag } else { 80 }
     }
-    $script:ConditionScore  = [math]::Round(($scores | Measure-Object -Average).Average, 0)
-    $StatusText.Text         = "Condition score: $($script:ConditionScore)/100   Now go to Price Estimate"
-    $MainTabs.SelectedIndex  = 4
-    $TxtBasePrice.Focus()
-})
-
-# ---------------------------------------------------------------------------
-# Price calculation
-# ---------------------------------------------------------------------------
-$BtnPrice.Add_Click({
-    $baseStr = $TxtBasePrice.Text -replace '[^\d]', ''
-    $baseVal = 0
-    if (-not $baseStr -or -not [int]::TryParse($baseStr, [ref]$baseVal) -or $baseVal -le 0) {
-        [System.Windows.MessageBox]::Show(
-            'Enter a valid base price (numbers only, e.g. 45000).',
-            'Input required', 'OK', 'Warning')
-        return
-    }
-    if (-not $script:BatInfo) {
-        [System.Windows.MessageBox]::Show(
-            'Run a full scan first (Overview tab).',
-            'Scan required', 'OK', 'Warning')
-        return
-    }
-    if ($script:ConditionScore -lt 0) {
-        [System.Windows.MessageBox]::Show(
-            'Complete the Condition Survey first.',
-            'Survey required', 'OK', 'Warning')
-        return
-    }
-
+    $script:ConditionScore = [math]::Round(($scores | Measure-Object -Average).Average, 0)
+    
+    # Calculate Final Price
     $batPct    = if ($script:BatInfo.HealthPct -ge 0) { $script:BatInfo.HealthPct } else { 80 }
     $storScore = Calc-StorageScore $script:StorDrives
+    $baseVal   = $script:BaseHardwareValue
+
     $result    = Calc-Price $baseVal $batPct $storScore $script:ConditionScore
 
+    # Update UI
     $LblScore.Text      = "$($result.OverallPct)%"
     $LblScoreSub.Text   = "Battery $([math]::Round($batPct,0))%   Storage $storScore/100   Condition $($script:ConditionScore)/100"
     $LblPriceRange.Text = "Tk $("{0:N0}" -f $result.Min)  --  Tk $("{0:N0}" -f $result.Max)"
-    $LblPriceNote.Text  = "Based on base price of Tk $("{0:N0}" -f $baseVal)"
+    $LblPriceNote.Text  = "Based on automated hardware base value of Tk $("{0:N0}" -f $baseVal)"
+    
     $PriceCard.Visibility = 'Visible'
     $StatusText.Text    = "Price estimate ready"
+    $MainTabs.SelectedIndex  = 4
 })
 
 # ---------------------------------------------------------------------------
