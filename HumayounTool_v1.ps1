@@ -404,7 +404,7 @@ function Calc-HardwareBaseValue {
     <Border Grid.Row="0" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="0,0,0,1">
       <Grid Margin="32,0">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <Border Width="36" Height="36" CornerRadius="10" Background="Transparent" Margin="0,0,16,0">
+          <Border Width="36" Height="36" CornerRadius="10" Margin="0,0,16,0">
             <Border.Effect>
               <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3" Color="#000000"/>
             </Border.Effect>
