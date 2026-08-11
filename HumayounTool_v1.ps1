@@ -12,6 +12,98 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, Sys
 # ---------------------------------------------------------------------------
 # XAML  -- Premium Modern UI
 # ---------------------------------------------------------------------------
+# Scoring helpers  (run on UI thread -- no runspace needed)
+# ---------------------------------------------------------------------------
+function Calc-StorageScore {
+    param($drives)
+    if (-not $drives -or $drives.Count -eq 0) { return 50 }
+    $scores = foreach ($d in $drives) {
+        if ($d.HealthStatus -eq 'Healthy') {
+            if ($d.WearLevel -ge 0) { [math]::Max(0, 100 - $d.WearLevel) } else { 85 }
+        } else { 30 }
+    }
+    return [math]::Round(($scores | Measure-Object -Average).Average, 0)
+}
+
+function Calc-Price {
+    param([double]$base, [double]$batPct, [double]$storScore, [double]$condScore)
+    $diag  = ($batPct + $storScore) / 2
+    $total = ($diag * 0.5 + $condScore * 0.5) / 100
+    return @{
+        Min        = [math]::Round(($base * $total * 0.85) / 100) * 100
+        Max        = [math]::Round(($base * $total * 1.05) / 100) * 100
+        OverallPct = [math]::Round($total * 100, 1)
+    }
+}
+
+function Calc-HardwareBaseValue {
+    param($cpu, $ram, $gpus, $storDrives)
+    
+    $val = 5000 # Absolute minimum base value for a functioning PC/Laptop
+
+    # CPU Tier valuation
+    if ($cpu -match 'i3') { $val += 3000 }
+    elseif ($cpu -match 'i5') { $val += 6000 }
+    elseif ($cpu -match 'i7') { $val += 10000 }
+    elseif ($cpu -match 'i9') { $val += 16000 }
+    elseif ($cpu -match 'Ryzen 3') { $val += 4000 }
+    elseif ($cpu -match 'Ryzen 5') { $val += 7000 }
+    elseif ($cpu -match 'Ryzen 7') { $val += 12000 }
+    elseif ($cpu -match 'Ryzen 9') { $val += 18000 }
+    elseif ($cpu -match 'Apple M1') { $val += 35000 }
+    elseif ($cpu -match 'Apple M2') { $val += 50000 }
+    elseif ($cpu -match 'Apple M3') { $val += 70000 }
+
+    # CPU Generation Heuristic (Intel)
+    if ($cpu -match 'i\d-([23456789]|10|11|12|13|14)\d{3}') {
+        $gen = [int]$Matches[1]
+        $val += ($gen * 1500)
+    } 
+    # CPU Generation Heuristic (AMD Ryzen)
+    elseif ($cpu -match 'Ryzen \d \d(\d)\d{2}') {
+        $gen = [int]$Matches[1]
+        $val += ($gen * 2000)
+    }
+
+    # RAM valuation (approx 400 BDT per GB above 4GB base)
+    if ($ram -gt 4) {
+        $val += (($ram - 4) * 400)
+    }
+
+    # Storage valuation
+    $totalGB = 0
+    if ($storDrives) {
+        foreach ($d in $storDrives) {
+            $totalGB += $d.Size
+            if ($d.MediaType -match 'SSD') { $val += 1500 } # SSD bonus
+            if ($d.MediaType -match 'NVMe') { $val += 2500 } # NVMe bonus
+        }
+    }
+    if ($totalGB -gt 0) {
+        $val += ($totalGB * 12) # ~12 BDT per GB
+    }
+
+    # GPU valuation
+    if ($gpus -notmatch 'Intel.*Graphics|AMD Radeon.*Graphics|Integrated') {
+        if ($gpus -match 'RTX 40') { $val += 60000 }
+        elseif ($gpus -match 'RTX 30') { $val += 35000 }
+        elseif ($gpus -match 'RTX 20') { $val += 20000 }
+        elseif ($gpus -match 'GTX 16') { $val += 12000 }
+        elseif ($gpus -match 'GTX 10') { $val += 8000 }
+        elseif ($gpus -match 'RX 7\d{2}') { $val += 45000 }
+        elseif ($gpus -match 'RX 6\d{2}') { $val += 25000 }
+        else { $val += 6000 } # Generic discrete GPU
+    }
+
+    # Cap bounds
+    if ($val -lt 5000) { $val = 5000 }
+    if ($val -gt 400000) { $val = 400000 }
+
+    # Round to nearest 500 Tk
+    return [math]::Round($val / 500) * 500
+}
+
+# ---------------------------------------------------------------------------
 [xml]$xaml = @'
 <Window
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
