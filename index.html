@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Humayoun Tool — বিক্রির আগে সত্যিটা জানুন</title>
+  <title>Humayoun Kobir Tool — বিক্রির আগে সত্যিটা জানুন</title>
   <meta name="description" content="Windows laptop and desktop diagnostic and honest resale price estimator.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -616,8 +616,8 @@
 
   <nav class="top">
     <div class="row">
-      <div class="brand"><span class="mark">হ</span><span data-en="Humayoun Tool" data-bn="হুমায়ূন টুল">হুমায়ূন
-          টুল</span><span class="ver">v1</span></div>
+      <div class="brand"><span class="mark">হ</span><span data-en="Humayoun Kobir Tool" data-bn="হুমায়ূন কবির টুল">হুমায়ূন
+          কবির টুল</span><span class="ver">v1</span></div>
       <div class="nav-actions">
         <div class="lang-toggle" role="group" aria-label="Language">
           <button id="btn-bn" class="active" onclick="setLang('bn')">বাং</button>
@@ -810,8 +810,8 @@
 
   <footer class="wrap">
     <div class="row">
-      <span data-en="Humayoun Tool · Open source · Hosted on Vercel"
-        data-bn="হুমায়ূন টুল · ওপেন সোর্স · Vercel-এ হোস্ট করা">হুমায়ূন টুল · ওপেন সোর্স · Vercel-এ হোস্ট করা</span>
+      <span data-en="Humayoun Kobir Tool · Open source · Hosted on Vercel"
+        data-bn="হুমায়ূন কবির টুল · ওপেন সোর্স · Vercel-এ হোস্ট করা">হুমায়ূন কবির টুল · ওপেন সোর্স · Vercel-এ হোস্ট করা</span>
       <span data-en="Windows only, for now" data-bn="আপাতত শুধু উইন্ডোজ">আপাতত শুধু উইন্ডোজ</span>
     </div>
   </footer>
@@ -832,7 +832,7 @@
       });
       document.getElementById('btn-bn').classList.toggle('active', lang === 'bn');
       document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-      try { localStorage.setItem('humayoun-lang', lang); } catch (e) { }
+      try { localStorage.setItem('hkt-lang', lang); } catch (e) { }
     }
 
     function copyCmd(btn) {
@@ -846,7 +846,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       let saved = 'bn';
-      try { saved = localStorage.getItem('humayoun-lang') || 'bn'; } catch (e) { }
+      try { saved = localStorage.getItem('hkt-lang') || 'bn'; } catch (e) { }
       setLang(saved);
 
       requestAnimationFrame(() => {

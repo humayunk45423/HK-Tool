@@ -108,7 +108,7 @@ function Calc-HardwareBaseValue {
 <Window
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  Title="Humayoun Tool"
+  Title="Humayoun Kobir Tool"
   Width="1024" Height="768"
   MinWidth="900" MinHeight="650"
   WindowStartupLocation="CenterScreen"
@@ -411,7 +411,7 @@ function Calc-HardwareBaseValue {
             <TextBlock Text="H" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
           </Border>
-          <TextBlock Text="Humayoun Tool" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+          <TextBlock Text="Humayoun Kobir Tool" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
           <Border Background="{DynamicResource PopupBg}" CornerRadius="6" Margin="12,0,0,0" Padding="8,4" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1">
             <TextBlock Text="v1.0" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" FontFamily="Consolas"/>
           </Border>
@@ -744,7 +744,7 @@ function Calc-HardwareBaseValue {
     <!-- Status bar -->
     <Border Grid.Row="2" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="0,1,0,0" Padding="32,0">
       <TextBlock Name="FooterText" FontSize="12" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontWeight="SemiBold"
-                 Text="Humayoun Tool v1.0   Windows Only   Open Source"/>
+                 Text="Humayoun Kobir Tool v1.0   Windows Only   Open Source"/>
     </Border>
 
   </Grid>
@@ -1153,7 +1153,7 @@ $BtnScan.Add_Click({
             $now              = Get-Date -Format 'HH:mm'
             $StatusText.Text  = "Scan complete  $now"
             $StatusDot.Fill   = $bcDone.ConvertFromString('#10B981')
-            $FooterText.Text  = "Humayoun Tool v1   Last scan: $now"
+            $FooterText.Text  = "Humayoun Kobir Tool v1   Last scan: $now"
 
         } catch {
             $StatusText.Text = "Scan error: $($_.Exception.Message)"
@@ -1223,7 +1223,7 @@ $BtnExportJSON.Add_Click({
         }
     }
     $json = $report | ConvertTo-Json -Depth 5
-    $path = "$([Environment]::GetFolderPath('Desktop'))\HumayounTool_Report_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
+    $path = "$([Environment]::GetFolderPath('Desktop'))\HKT_Report_$(Get-Date -Format 'yyyyMMdd_HHmmss').json"
     try {
         $json | Out-File -FilePath $path -Encoding UTF8 -Force
         [System.Windows.MessageBox]::Show("Report exported successfully to:`n$path", "Export Complete", 'OK', 'Information')

@@ -1,4 +1,4 @@
-# Humayoun Tool -- installer stub
+# Humayoun Kobir Tool -- installer stub
 # Served at: hktool.vercel.app/i
 # Run with:  irm hktool.vercel.app/i | iex
 
