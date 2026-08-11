@@ -404,12 +404,13 @@ function Calc-HardwareBaseValue {
     <Border Grid.Row="0" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="0,0,0,1">
       <Grid Margin="32,0">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <Border Width="36" Height="36" CornerRadius="10" Background="{DynamicResource BtnBg}" Margin="0,0,16,0">
+          <Border Width="36" Height="36" CornerRadius="10" Background="Transparent" Margin="0,0,16,0">
             <Border.Effect>
               <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3" Color="#000000"/>
             </Border.Effect>
-            <TextBlock Text="H" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border.Background>
+              <ImageBrush ImageSource="https://raw.githubusercontent.com/humayunk45423/HK-Tool/main/logo.png" Stretch="UniformToFill"/>
+            </Border.Background>
           </Border>
           <TextBlock Text="Humayoun Kobir Tool" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
           <Border Background="{DynamicResource PopupBg}" CornerRadius="6" Margin="12,0,0,0" Padding="8,4" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1">
@@ -417,7 +418,7 @@ function Calc-HardwareBaseValue {
           </Border>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-          <Button Name="BtnTheme" Content="&#9681;" Width="36" Height="36" Background="{DynamicResource PopupBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1" Foreground="{DynamicResource TextMain}" Cursor="Hand" Margin="0,0,24,0" ToolTip="Toggle Light/Dark Theme">
+          <Button Name="BtnTheme" Content="&#xE706;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="36" Height="36" Background="{DynamicResource PopupBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1" Foreground="{DynamicResource TextMain}" Cursor="Hand" Margin="0,0,24,0" ToolTip="Toggle Light/Dark Theme">
             <Button.Template>
               <ControlTemplate TargetType="Button">
                 <Border Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="18">
