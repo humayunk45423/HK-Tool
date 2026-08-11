@@ -960,7 +960,7 @@ $BtnScan.Add_Click({
             # -- Battery --
             $bat = $r.Bat
             if ($bat.HealthPct -ge 0) {
-                $LblBatHealth.Text  = "$($bat.HealthPct)%"
+                $LblBasePrice.Text = "Tk $($baseVal.ToString('N0'))"
                 $BarBatHealth.Value = [math]::Min($bat.HealthPct, 100)
 
                 # Color-code health
@@ -1087,9 +1087,9 @@ $BtnCondition.Add_Click({
 
     # Update UI
     $LblScore.Text      = "$($result.OverallPct)%"
-    $LblScoreSub.Text   = "Battery $([math]::Round($batPct,0))%   Storage $storScore/100   Condition $($script:ConditionScore)/100"
-    $LblPriceRange.Text = "Tk $("{0:N0}" -f $result.Min)  --  Tk $("{0:N0}" -f $result.Max)"
-    $LblPriceNote.Text  = "Based on automated hardware base value of Tk $("{0:N0}" -f $baseVal)"
+    $LblScoreSub.Text   = "Battery $($bat.HealthPct)%  |  Storage $($storScore)/100  |  Condition $($condScore)/100"
+    $LblPriceRange.Text = "Tk $($priceRes.Min.ToString('N0')) -- Tk $($priceRes.Max.ToString('N0'))"
+    $LblPriceNote.Text  = "Based on automated hardware base value of Tk $($baseVal.ToString('N0'))"
     
     $PriceCard.Visibility = 'Visible'
     $BtnExportJSON.Visibility = 'Visible'
