@@ -37,63 +37,84 @@ function Calc-Price {
 }
 
 function Calc-HardwareBaseValue {
-    param($cpu, $ram, $gpus, $storDrives)
+    param($sys, $storDrives)
     
-    $val = 5000 # Absolute minimum base value for a functioning PC/Laptop
+    $cpu = $sys.CPU
+    $ram = $sys.RAM
+    $gpus = $sys.GPU
+    $manuf = $sys.Manufacturer
+    $type = $sys.SystemType
+    $biosDate = $sys.BIOSDate
 
-    # CPU Tier valuation
-    if ($cpu -match 'i3') { $val += 3000 }
-    elseif ($cpu -match 'i5') { $val += 6000 }
-    elseif ($cpu -match 'i7') { $val += 10000 }
-    elseif ($cpu -match 'i9') { $val += 16000 }
-    elseif ($cpu -match 'Ryzen 3') { $val += 4000 }
-    elseif ($cpu -match 'Ryzen 5') { $val += 7000 }
-    elseif ($cpu -match 'Ryzen 7') { $val += 12000 }
-    elseif ($cpu -match 'Ryzen 9') { $val += 18000 }
-    elseif ($cpu -match 'Apple M1') { $val += 35000 }
-    elseif ($cpu -match 'Apple M2') { $val += 50000 }
-    elseif ($cpu -match 'Apple M3') { $val += 70000 }
+    $msrp = 25000 # Absolute minimum baseline MSRP for a new low-end PC
 
-    # CPU Generation Heuristic (Intel)
-    if ($cpu -match 'i\d-([23456789]|10|11|12|13|14)\d{3}') {
-        $gen = [int]$Matches[1]
-        $val += ($gen * 1500)
-    } 
-    # CPU Generation Heuristic (AMD Ryzen)
-    elseif ($cpu -match 'Ryzen \d \d(\d)\d{2}') {
-        $gen = [int]$Matches[1]
-        $val += ($gen * 2000)
+    # CPU Tier MSRP baseline
+    if ($cpu -match 'i3|Ryzen 3') { $msrp = 45000 }
+    elseif ($cpu -match 'i5|Ryzen 5') { $msrp = 65000 }
+    elseif ($cpu -match 'i7|Ryzen 7') { $msrp = 95000 }
+    elseif ($cpu -match 'i9|Ryzen 9') { $msrp = 150000 }
+    elseif ($cpu -match 'Apple M1|Apple M2|Apple M3') { $msrp = 120000 }
+
+    # RAM MSRP Premium (4k per 8GB over 8GB)
+    if ($ram -gt 8) {
+        $msrp += ([math]::Floor(($ram - 8) / 8) * 4000)
     }
 
-    # RAM valuation (approx 400 BDT per GB above 4GB base)
-    if ($ram -gt 4) {
-        $val += (($ram - 4) * 400)
-    }
-
-    # Storage valuation
+    # Storage MSRP Premium
     $totalGB = 0
+    $hasFast = $false
     if ($storDrives) {
         foreach ($d in $storDrives) {
             $totalGB += $d.Size
-            if ($d.MediaType -match 'SSD') { $val += 1500 } # SSD bonus
-            if ($d.MediaType -match 'NVMe') { $val += 2500 } # NVMe bonus
+            if ($d.MediaType -match 'SSD|NVMe') { $hasFast = $true }
         }
     }
-    if ($totalGB -gt 0) {
-        $val += ($totalGB * 12) # ~12 BDT per GB
+    if ($hasFast -and $totalGB -ge 500) { $msrp += 10000 }
+    elseif ($hasFast) { $msrp += 5000 }
+    
+    # GPU MSRP Premium
+    if ($gpus -notmatch 'Intel.*Graphics|AMD Radeon.*Graphics|Integrated') {
+        if ($gpus -match 'RTX 40') { $msrp += 90000 }
+        elseif ($gpus -match 'RTX 30') { $msrp += 60000 }
+        elseif ($gpus -match 'RTX 20') { $msrp += 35000 }
+        elseif ($gpus -match 'GTX 16') { $msrp += 25000 }
+        elseif ($gpus -match 'GTX 10') { $msrp += 15000 }
+        elseif ($gpus -match 'RX 7\d{2}') { $msrp += 70000 }
+        elseif ($gpus -match 'RX 6\d{2}') { $msrp += 40000 }
+        else { $msrp += 15000 }
     }
 
-    # GPU valuation
-    if ($gpus -notmatch 'Intel.*Graphics|AMD Radeon.*Graphics|Integrated') {
-        if ($gpus -match 'RTX 40') { $val += 60000 }
-        elseif ($gpus -match 'RTX 30') { $val += 35000 }
-        elseif ($gpus -match 'RTX 20') { $val += 20000 }
-        elseif ($gpus -match 'GTX 16') { $val += 12000 }
-        elseif ($gpus -match 'GTX 10') { $val += 8000 }
-        elseif ($gpus -match 'RX 7\d{2}') { $val += 45000 }
-        elseif ($gpus -match 'RX 6\d{2}') { $val += 25000 }
-        else { $val += 6000 } # Generic discrete GPU
+    # Determine Age
+    $age = -1
+    if ($biosDate -match '^(\d{4})') {
+        $year = [int]$Matches[1]
+        $age = (Get-Date).Year - $year
     }
+    
+    # Fallback to CPU Gen if BIOS date is missing or weird
+    if ($age -lt 0 -or $age -gt 15) {
+        if ($cpu -match 'i\d-([23456789]|10|11|12|13|14)\d{3}') {
+            $gen = [int]$Matches[1]
+            $age = 14 - $gen # 14th gen is ~0, 10th gen is ~4
+        } elseif ($cpu -match 'Ryzen \d \d(\d)\d{2}') {
+            $gen = [int]$Matches[1]
+            $age = 8 - $gen # 7th gen is ~1, 5th gen is ~3
+        } else {
+            $age = 5 # arbitrary fallback
+        }
+    }
+    if ($age -lt 1) { $age = 1 } # At least 1 year depreciation
+
+    # Depreciation Rate
+    $decay = 0.78 # 22% loss per year
+    
+    if ($manuf -match 'Apple') { $decay = 0.85 } # Apple holds value (15%)
+    elseif ($manuf -match 'Lenovo.*ThinkPad|Dell.*XPS') { $decay = 0.82 }
+    
+    if ($type -match 'Desktop') { $decay = 0.82 } # Desktops depreciate slower
+
+    # Exponential Decay Formula
+    $val = $msrp * [math]::Pow($decay, $age)
 
     # Cap bounds
     if ($val -lt 5000) { $val = 5000 }
@@ -1117,7 +1138,7 @@ $BtnScan.Add_Click({
             }
 
             # Calculate Automated Base Price
-            $script:BaseHardwareValue = Calc-HardwareBaseValue $r.Sys.CPU $r.Sys.RAM $r.Sys.GPU $r.Stor
+            $script:BaseHardwareValue = Calc-HardwareBaseValue $r.Sys $r.Stor
             $LblBasePrice.Text = 'Tk ' + ('{0:N0}' -f $script:BaseHardwareValue)
             $script:scanDone = $true
 
