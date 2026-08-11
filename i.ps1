@@ -14,7 +14,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 # Download latest script from GitHub and run it
-$url = 'https://raw.githubusercontent.com/humayunk45423/HK-Tool/main/HumayounTool_v1.ps1'
+$url = "https://raw.githubusercontent.com/humayunk45423/HK-Tool/main/HumayounTool_v1.ps1?t=$([guid]::NewGuid().ToString())"
 $tmp = "$env:TEMP\HumayounTool_run.ps1"
 Invoke-WebRequest -Uri $url -OutFile $tmp -UseBasicParsing
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $tmp
