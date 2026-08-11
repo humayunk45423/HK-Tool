@@ -860,6 +860,13 @@ $BtnScan.Add_Click({
     $StatusDot.Fill        = [Windows.Media.Brushes]::DimGray
     $BtnScan.IsEnabled     = $false
     $script:dotCount       = 0
+    # Reset state so a second scan always gives fresh results
+    $script:scanDone          = $false
+    $script:BatInfo           = $null
+    $script:StorDrives        = $null
+    $script:SysInfo           = $null
+    $script:ConditionScore    = -1
+    $script:BaseHardwareValue = 0
 
     # Create a fresh PowerShell instance with its own runspace
     $script:scanPS = [System.Management.Automation.PowerShell]::Create()
@@ -888,16 +895,16 @@ $BtnScan.Add_Click({
                 }
             } catch {}
 
-            # Fallback: powercfg HTML report (for cycle count and capacity if WMI gave nothing)
-            if ($design -le 0 -or $full -le 0) {
+            # Fallback: powercfg HTML report ONLY for fields still missing
+            if ($design -le 0 -or $full -le 0 -or $cycles -lt 0) {
                 try {
                     $tmp = "$env:TEMP\batreport_hktool.html"
                     powercfg /batteryreport /output $tmp 2>$null | Out-Null
                     if (Test-Path $tmp) {
                         $html = Get-Content $tmp -Raw -ErrorAction Stop
-                        if ($design -le 0 -and $html -match 'DESIGN CAPACITY.*?([\d,]+)\s*mWh') { $design = [int]($Matches[1] -replace ',','') }
-                        if ($full   -le 0 -and $html -match 'FULL CHARGE CAPACITY.*?([\d,]+)\s*mWh') { $full = [int]($Matches[1] -replace ',','') }
-                        if ($cycles -lt 0 -and $html -match 'CYCLE COUNT.*?<td>\s*([0-9]+)') { $cycles = [int]$Matches[1] }
+                        if ($design -le 0 -and $html -match 'DESIGN CAPACITY.*?(\d[\d,]+)\s*mWh')       { $design = [int]($Matches[1] -replace ',','') }
+                        if ($full   -le 0 -and $html -match 'FULL CHARGE CAPACITY.*?(\d[\d,]+)\s*mWh') { $full   = [int]($Matches[1] -replace ',','') }
+                        if ($cycles -lt 0 -and $html -match 'CYCLE COUNT.*?<td>\s*([1-9][0-9]*)')       { $cycles = [int]$Matches[1] }
                         Remove-Item $tmp -Force -ErrorAction SilentlyContinue
                     }
                 } catch {}
@@ -1024,7 +1031,13 @@ $BtnScan.Add_Click({
                 elseif ($bat.HealthPct -ge 60) { $LblBatHealth.Foreground = $bcB.ConvertFromString('#F59E0B') }
                 else                           { $LblBatHealth.Foreground = $bcB.ConvertFromString('#EF4444') }
 
-                $LblCycles.Text    = if ($bat.CycleCount -ge 0) { [string]$bat.CycleCount } else { 'Not reported' }
+                if ($bat.CycleCount -ge 0) {
+                    $LblCycles.Text     = [string]$bat.CycleCount
+                    $LblCycles.FontSize = 34
+                } else {
+                    $LblCycles.Text     = 'Not reported'
+                    $LblCycles.FontSize = 16
+                }
                 $LblCapNow.Text    = if ($bat.FullmWh   -gt 0) { "$([math]::Round($bat.FullmWh/1000,1)) Wh" } else { 'N/A' }
                 $LblCapDesign.Text = if ($bat.DesignmWh -gt 0) { "Design: $([math]::Round($bat.DesignmWh/1000,1)) Wh" } else { '' }
 
@@ -1097,7 +1110,7 @@ $BtnScan.Add_Click({
 
             # Calculate Automated Base Price
             $script:BaseHardwareValue = Calc-HardwareBaseValue $r.Sys.CPU $r.Sys.RAM $r.Sys.GPU $r.Stor
-            $LblBasePrice.Text = "Tk $("{0:N0}" -f $script:BaseHardwareValue)"
+            $LblBasePrice.Text = 'Tk ' + ('{0:N0}' -f $script:BaseHardwareValue)
             $script:scanDone = $true
 
             # -- Populate System Details tab --
@@ -1178,10 +1191,10 @@ $BtnCondition.Add_Click({
     $result    = Calc-Price $baseVal $batPct $storScore $script:ConditionScore
 
     # Update UI
-    $LblScore.Text      = "$($result.OverallPct)%"
+    $LblScore.Text      = ('{0}' -f $result.OverallPct) + '%'
     $LblScoreSub.Text   = "Battery $([math]::Round($batPct,0))%  |  Storage $storScore/100  |  Condition $($script:ConditionScore)/100"
-    $LblPriceRange.Text = "Tk $("{0:N0}" -f $result.Min)  --  Tk $("{0:N0}" -f $result.Max)"
-    $LblPriceNote.Text  = "Based on automated hardware base value of Tk $("{0:N0}" -f $baseVal)"
+    $LblPriceRange.Text = 'Tk ' + ('{0:N0}' -f $result.Min) + '  --  Tk ' + ('{0:N0}' -f $result.Max)
+    $LblPriceNote.Text  = 'Based on hardware base value of Tk ' + ('{0:N0}' -f $baseVal)
 
     $PriceCard.Visibility = 'Visible'
     $BtnExportJSON.Visibility = 'Visible'
@@ -1193,7 +1206,10 @@ $BtnCondition.Add_Click({
 # Export to JSON
 # ---------------------------------------------------------------------------
 $BtnExportJSON.Add_Click({
-    if (-not $script:BatInfo) { return }
+    if (-not $script:scanDone -or -not $script:BatInfo) {
+        [System.Windows.MessageBox]::Show('Run a full scan first.', 'No data', 'OK', 'Warning')
+        return
+    }
     $report = [ordered]@{
         Timestamp = (Get-Date).ToString('o')
         System = $script:SysInfo
