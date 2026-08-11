@@ -838,9 +838,9 @@ $BtnScan.Add_Click({
                 if (Test-Path $tmp) {
                     $html   = Get-Content $tmp -Raw -ErrorAction Stop
                     $design = 0; $full = 0; $cycles = -1
-                    if ($html -match 'DESIGN CAPACITY\s*</span>[^<]*<span[^>]*>\s*([\d,]+)\s*mWh')       { $design  = [int]($Matches[1] -replace ',','') }
-                    if ($html -match 'FULL CHARGE CAPACITY\s*</span>[^<]*<span[^>]*>\s*([\d,]+)\s*mWh') { $full    = [int]($Matches[1] -replace ',','') }
-                    if ($html -match 'CYCLE COUNT\s*</span>[^<]*<span[^>]*>\s*(\d+)')                    { $cycles  = [int]$Matches[1] }
+                    if ($html -match 'DESIGN CAPACITY.*?(?:\n.*?)*?([\d,]+)\s*mWh')       { $design  = [int]($Matches[1] -replace ',','') }
+                    if ($html -match 'FULL CHARGE CAPACITY.*?(?:\n.*?)*?([\d,]+)\s*mWh') { $full    = [int]($Matches[1] -replace ',','') }
+                    if ($html -match 'CYCLE COUNT.*?(?:\n.*?)*?<td>\s*([0-9]+)')         { $cycles  = [int]$Matches[1] }
                     Remove-Item $tmp -Force -ErrorAction SilentlyContinue
                     $health = if ($design -gt 0) { [math]::Round($full / $design * 100, 1) } else { -1 }
                     return @{ DesignmWh=$design; FullmWh=$full; CycleCount=$cycles; HealthPct=$health }
@@ -971,8 +971,8 @@ $BtnScan.Add_Click({
                 foreach ($d in $r.Stor) {
                     $card               = [Windows.Controls.Border]::new()
                     $card.Tag           = 'drivecard'
-                    $card.Background    = $bcS.ConvertFromString('#18181B')
-                    $card.BorderBrush   = $bcS.ConvertFromString('#27272A')
+                    $card.SetResourceReference([System.Windows.Controls.Border]::BackgroundProperty, 'CardBg')
+                    $card.SetResourceReference([System.Windows.Controls.Border]::BorderBrushProperty, 'BorderCol')
                     $card.BorderThickness = [Windows.Thickness]::new(1)
                     $card.CornerRadius  = [Windows.CornerRadius]::new(12)
                     $card.Padding       = [Windows.Thickness]::new(20)
@@ -981,25 +981,25 @@ $BtnScan.Add_Click({
                     $sp = [Windows.Controls.StackPanel]::new()
 
                     $mkTb = {
-                        param($text, $size, $color, $margin)
+                        param($text, $size, $colorKey, $margin)
                         $tb              = [System.Windows.Controls.TextBlock]::new()
                         $tb.Text         = $text
                         $tb.FontSize     = $size
-                        $tb.Foreground   = $bcS.ConvertFromString($color)
+                        $tb.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, $colorKey)
                         $tb.TextWrapping = 'Wrap'
                         if ($margin) { $tb.Margin = $margin }
                         $tb
                     }
 
-                    $null = $sp.Children.Add((&$mkTb $d.FriendlyName 15 '#FAFAFA' $null))
+                    $null = $sp.Children.Add((&$mkTb $d.FriendlyName 15 'TextMain' $null))
 
                     $sub1 = "$($d.MediaType)  |  $($d.Size) GB  |  Status: $($d.HealthStatus)"
-                    $null = $sp.Children.Add((&$mkTb $sub1 13 '#A1A1AA' ([Windows.Thickness]::new(0,6,0,0))))
+                    $null = $sp.Children.Add((&$mkTb $sub1 13 'TextSec' ([Windows.Thickness]::new(0,6,0,0))))
 
                     if ($d.WearLevel -ge 0) {
                         $tempStr = if ($d.Temperature -ge 0) { "$($d.Temperature) C" } else { 'N/A' }
                         $sub2    = "Wear level: $($d.WearLevel)%   |   Temperature: $tempStr"
-                        $null = $sp.Children.Add((&$mkTb $sub2 13 '#71717A' ([Windows.Thickness]::new(0,4,0,0))))
+                        $null = $sp.Children.Add((&$mkTb $sub2 13 'TextMuted' ([Windows.Thickness]::new(0,4,0,0))))
                     }
 
                     $card.Child = $sp
