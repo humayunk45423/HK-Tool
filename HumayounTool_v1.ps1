@@ -508,6 +508,37 @@ function Calc-HardwareBaseValue {
         </ScrollViewer>
       </TabItem>
 
+      <!-- System Details (populated after scan) -->
+      <TabItem Header="System Details" Name="TabSysDetails">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Margin="48,40,48,48">
+            <TextBlock Text="System Details" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,8"/>
+            <TextBlock Text="Full hardware &amp; system summary collected from Windows."
+                       Style="{StaticResource BodyText}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,32"/>
+            <TextBlock Name="LblSysDetailsPH" Style="{StaticResource BodyText}"
+                       Text="Run a scan first to see full system details." Foreground="{DynamicResource TextMuted}"/>
+            <!-- Grid of info rows built in code -->
+            <ItemsControl Name="SysDetailsPanel">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="0,0,0,1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="260"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Key}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}" Padding="0,10" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13"
+                               Foreground="{DynamicResource TextMain}" Padding="0,10" TextWrapping="Wrap"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
       <!-- Battery -->
       <TabItem Header="Battery">
         <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
@@ -708,37 +739,6 @@ function Calc-HardwareBaseValue {
         </ScrollViewer>
       </TabItem>
 
-      <!-- System Details (populated after scan) -->
-      <TabItem Header="System Details" Name="TabSysDetails">
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
-          <StackPanel Margin="48,40,48,48">
-            <TextBlock Text="System Details" FontSize="26" FontWeight="Bold"
-                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,8"/>
-            <TextBlock Text="Full hardware &amp; system summary collected from Windows."
-                       Style="{StaticResource BodyText}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,32"/>
-            <TextBlock Name="LblSysDetailsPH" Style="{StaticResource BodyText}"
-                       Text="Run a scan first to see full system details." Foreground="{DynamicResource TextMuted}"/>
-            <!-- Grid of info rows built in code -->
-            <ItemsControl Name="SysDetailsPanel">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <Grid Margin="0,0,0,1">
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="260"/>
-                      <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="{Binding Key}" FontSize="13" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextMuted}" Padding="0,10" TextWrapping="Wrap"/>
-                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13"
-                               Foreground="{DynamicResource TextMain}" Padding="0,10" TextWrapping="Wrap"/>
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </ScrollViewer>
-      </TabItem>
-
     </TabControl>
 
     <!-- Status bar -->
@@ -882,7 +882,8 @@ $BtnScan.Add_Click({
                 if ($fullCharge -and $fullCharge.FullChargedCapacity -gt 0) {
                     $full = [int]$fullCharge.FullChargedCapacity
                 }
-                if ($cycleObj -and $null -ne $cycleObj.CycleCount) {
+                # CycleCount 0 = not reported by hardware (common ASUS/MSI firmware limitation)
+                if ($cycleObj -and $null -ne $cycleObj.CycleCount -and [int]$cycleObj.CycleCount -gt 0) {
                     $cycles = [int]$cycleObj.CycleCount
                 }
             } catch {}
@@ -1185,7 +1186,7 @@ $BtnCondition.Add_Click({
     $PriceCard.Visibility = 'Visible'
     $BtnExportJSON.Visibility = 'Visible'
     $StatusText.Text    = 'Price estimate ready'
-    $MainTabs.SelectedIndex = 4
+    $MainTabs.SelectedIndex = 5  # Price Estimate is now index 5 (SysDetails moved to 2nd)
 })
 
 # ---------------------------------------------------------------------------
