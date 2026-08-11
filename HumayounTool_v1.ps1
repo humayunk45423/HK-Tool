@@ -325,7 +325,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, Sys
           </Border>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-          <Button Name="BtnTheme" Content="ðŸŒ—" Width="36" Height="36" Background="{DynamicResource PopupBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1" Foreground="{DynamicResource TextMain}" Cursor="Hand" Margin="0,0,24,0" ToolTip="Toggle Light/Dark Theme">
+          <Button Name="BtnTheme" Content="&#9681;" Width="36" Height="36" Background="{DynamicResource PopupBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1" Foreground="{DynamicResource TextMain}" Cursor="Hand" Margin="0,0,24,0" ToolTip="Toggle Light/Dark Theme">
             <Button.Template>
               <ControlTemplate TargetType="Button">
                 <Border Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="18">
@@ -675,6 +675,7 @@ $script:SysInfo        = $null
 $script:ConditionScore = -1
 $script:dotCount       = 0
 $script:BaseHardwareValue = 0
+$script:scanDone       = $false
 
 # ---------------------------------------------------------------------------
 # Theme Toggle
@@ -874,39 +875,39 @@ $BtnScan.Add_Click({
                 $LblStoragePH.Visibility = 'Visible'
             } else {
                 $LblStoragePH.Visibility = 'Collapsed'
-                                $bc = [Windows.Media.BrushConverter]::new()
+                $bcS = [Windows.Media.BrushConverter]::new()
                 foreach ($d in $r.Stor) {
-                    $card            = [Windows.Controls.Border]::new()
-                    $card.Tag        = 'drivecard'
-                    $card.SetResourceReference([System.Windows.Controls.Border]::BackgroundProperty, 'CardBg')
-                    $card.SetResourceReference([System.Windows.Controls.Border]::BorderBrushProperty, 'BorderCol')
+                    $card               = [Windows.Controls.Border]::new()
+                    $card.Tag           = 'drivecard'
+                    $card.Background    = $bcS.ConvertFromString('#18181B')
+                    $card.BorderBrush   = $bcS.ConvertFromString('#27272A')
                     $card.BorderThickness = [Windows.Thickness]::new(1)
-                    $card.CornerRadius = [Windows.CornerRadius]::new(12)
-                    $card.Padding    = [Windows.Thickness]::new(20)
-                    $card.Margin     = [Windows.Thickness]::new(0, 0, 0, 12)
+                    $card.CornerRadius  = [Windows.CornerRadius]::new(12)
+                    $card.Padding       = [Windows.Thickness]::new(20)
+                    $card.Margin        = [Windows.Thickness]::new(0, 0, 0, 12)
 
                     $sp = [Windows.Controls.StackPanel]::new()
 
                     $mkTb = {
-                        param($text, $size, $resKey, $margin)
-                        $tb             = [System.Windows.Controls.TextBlock]::new()
-                        $tb.Text        = $text
-                        $tb.FontSize    = $size
-                        $tb.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, $resKey)
+                        param($text, $size, $color, $margin)
+                        $tb              = [System.Windows.Controls.TextBlock]::new()
+                        $tb.Text         = $text
+                        $tb.FontSize     = $size
+                        $tb.Foreground   = $bcS.ConvertFromString($color)
                         $tb.TextWrapping = 'Wrap'
                         if ($margin) { $tb.Margin = $margin }
                         $tb
                     }
 
-                    $null = $sp.Children.Add((&$mkTb $d.FriendlyName 15 'TextMain' $null))
+                    $null = $sp.Children.Add((&$mkTb $d.FriendlyName 15 '#FAFAFA' $null))
 
                     $sub1 = "$($d.MediaType)  |  $($d.Size) GB  |  Status: $($d.HealthStatus)"
-                    $null = $sp.Children.Add((&$mkTb $sub1 13 'TextSec' ([Windows.Thickness]::new(0,6,0,0))))
+                    $null = $sp.Children.Add((&$mkTb $sub1 13 '#A1A1AA' ([Windows.Thickness]::new(0,6,0,0))))
 
                     if ($d.WearLevel -ge 0) {
                         $tempStr = if ($d.Temperature -ge 0) { "$($d.Temperature) C" } else { 'N/A' }
                         $sub2    = "Wear level: $($d.WearLevel)%   |   Temperature: $tempStr"
-                        $null = $sp.Children.Add((&$mkTb $sub2 13 'TextMuted' ([Windows.Thickness]::new(0,4,0,0))))
+                        $null = $sp.Children.Add((&$mkTb $sub2 13 '#71717A' ([Windows.Thickness]::new(0,4,0,0))))
                     }
 
                     $card.Child = $sp
@@ -917,11 +918,13 @@ $BtnScan.Add_Click({
             # Calculate Automated Base Price
             $script:BaseHardwareValue = Calc-HardwareBaseValue $r.Sys.CPU $r.Sys.RAM $r.Sys.GPU $r.Stor
             $LblBasePrice.Text = "$("{0:N0}" -f $script:BaseHardwareValue) Tk"
+            $script:scanDone = $true
 
             # Update status
+            $bcDone           = [Windows.Media.BrushConverter]::new()
             $now              = Get-Date -Format 'HH:mm'
             $StatusText.Text  = "Scan complete  $now"
-                        $StatusDot.Fill   = $bc.ConvertFromString('#10B981')
+            $StatusDot.Fill   = $bcDone.ConvertFromString('#10B981')
             $FooterText.Text  = "Humayoun Tool v1   Last scan: $now"
 
         } catch {
@@ -939,7 +942,7 @@ $BtnScan.Add_Click({
 # Condition survey
 # ---------------------------------------------------------------------------
 $BtnCondition.Add_Click({
-    if (-not $script:BatInfo) {
+    if (-not $script:scanDone) {
         [System.Windows.MessageBox]::Show(
             'Run a full scan first (Overview tab) before calculating the estimate.',
             'Scan required', 'OK', 'Warning')
