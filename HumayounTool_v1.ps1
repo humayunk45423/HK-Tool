@@ -73,55 +73,17 @@ function Calc-HardwareBaseValue {
     elseif ($hasFast) { $msrp += 5000 }
     
     # GPU MSRP Premium
-    if ($gpus -notmatch 'Intel.*Graphics|AMD Radeon.*Graphics|Integrated') {
-        if ($gpus -match 'RTX 40') { $msrp += 90000 }
-        elseif ($gpus -match 'RTX 30') { $msrp += 60000 }
-        elseif ($gpus -match 'RTX 20') { $msrp += 35000 }
-        elseif ($gpus -match 'GTX 16') { $msrp += 25000 }
-        elseif ($gpus -match 'GTX 10') { $msrp += 15000 }
-        elseif ($gpus -match 'RX 7\d{2}') { $msrp += 70000 }
-        elseif ($gpus -match 'RX 6\d{2}') { $msrp += 40000 }
-        else { $msrp += 15000 }
-    }
-
-    # Determine Age
-    $age = -1
-    if ($biosDate -match '^(\d{4})') {
-        $year = [int]$Matches[1]
-        $age = (Get-Date).Year - $year
-    }
-    
-    # Fallback to CPU Gen if BIOS date is missing or weird
-    if ($age -lt 0 -or $age -gt 15) {
-        if ($cpu -match 'i\d-([23456789]|10|11|12|13|14)\d{3}') {
-            $gen = [int]$Matches[1]
-            $age = 14 - $gen # 14th gen is ~0, 10th gen is ~4
-        } elseif ($cpu -match 'Ryzen \d \d(\d)\d{2}') {
-            $gen = [int]$Matches[1]
-            $age = 8 - $gen # 7th gen is ~1, 5th gen is ~3
-        } else {
-            $age = 5 # arbitrary fallback
-        }
-    }
-    if ($age -lt 1) { $age = 1 } # At least 1 year depreciation
-
-    # Depreciation Rate
-    $decay = 0.78 # 22% loss per year
-    
-    if ($manuf -match 'Apple') { $decay = 0.85 } # Apple holds value (15%)
-    elseif ($manuf -match 'Lenovo.*ThinkPad|Dell.*XPS') { $decay = 0.82 }
-    
-    if ($type -match 'Desktop') { $decay = 0.82 } # Desktops depreciate slower
-
-    # Exponential Decay Formula
-    $val = $msrp * [math]::Pow($decay, $age)
-
-    # Cap bounds
-    if ($val -lt 5000) { $val = 5000 }
-    if ($val -gt 400000) { $val = 400000 }
+    if ($gpus -match 'RTX 40') { $msrp += 90000 }
+    elseif ($gpus -match 'RTX 30') { $msrp += 60000 }
+    elseif ($gpus -match 'RTX 20') { $msrp += 35000 }
+    elseif ($gpus -match 'GTX 16') { $msrp += 25000 }
+    elseif ($gpus -match 'GTX 10') { $msrp += 15000 }
+    elseif ($gpus -match 'RX 7\d{2}') { $msrp += 70000 }
+    elseif ($gpus -match 'RX 6\d{2}') { $msrp += 40000 }
+    elseif ($gpus -match 'GTX|RTX|Radeon RX|Dedicated') { $msrp += 15000 }
 
     # Round to nearest 500 Tk
-    return [math]::Round($val / 500) * 500
+    return [math]::Round($msrp / 500) * 500
 }
 
 # ---------------------------------------------------------------------------
@@ -645,16 +607,56 @@ function Calc-HardwareBaseValue {
                   <ColumnDefinition Width="320"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                  <RowDefinition/><RowDefinition Height="20"/><RowDefinition/>
-                  <RowDefinition Height="20"/><RowDefinition/>
-                  <RowDefinition Height="20"/><RowDefinition/>
-                  <RowDefinition Height="20"/><RowDefinition/>
-                  <RowDefinition Height="20"/><RowDefinition/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/><RowDefinition Height="20"/>
+                  <RowDefinition/>
                 </Grid.RowDefinitions>
 
+                <!-- Age -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Device Age" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" Name="CboAge" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="Less than 6 Months"               Tag="95" IsSelected="True"/>
+                  <ComboBoxItem Content="1 to 2 Years"                     Tag="75"/>
+                  <ComboBoxItem Content="3 to 4 Years"                     Tag="50"/>
+                  <ComboBoxItem Content="5+ Years"                         Tag="35"/>
+                </ComboBox>
+
+                <!-- Warranty -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Warranty Status" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="2" Grid.Column="1" Name="CboWarranty" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="Valid Official Warranty"          Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="Shop Warranty Only"               Tag="90"/>
+                  <ComboBoxItem Content="Expired / No Warranty"            Tag="85"/>
+                </ComboBox>
+
+                <!-- Accessories -->
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Accessories" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="4" Grid.Column="1" Name="CboAccessories" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="Original Box &amp; Charger"           Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="Original Charger Only"            Tag="90"/>
+                  <ComboBoxItem Content="Local / Aftermarket Charger"      Tag="80"/>
+                  <ComboBoxItem Content="No Charger"                       Tag="70"/>
+                </ComboBox>
+
+                <!-- Battery Backup -->
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="Battery Backup" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="6" Grid.Column="1" Name="CboBattery" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="3+ Hours Backup"                  Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="1 to 2 Hours Backup"              Tag="85"/>
+                  <ComboBoxItem Content="Less than 1 Hour"                 Tag="60"/>
+                  <ComboBoxItem Content="Needs Replacement"                Tag="40"/>
+                </ComboBox>
+
                 <!-- Screen -->
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Screen Display" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="0" Grid.Column="1" Name="CboScreen" Style="{StaticResource DarkCombo}">
+                <TextBlock Grid.Row="8" Grid.Column="0" Text="Screen Display" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="8" Grid.Column="1" Name="CboScreen" Style="{StaticResource DarkCombo}">
                   <ComboBoxItem Content="Perfect (No scratches, no dead pixels)"   Tag="100" IsSelected="True"/>
                   <ComboBoxItem Content="Minor scratches (Barely visible)"           Tag="85"/>
                   <ComboBoxItem Content="Noticeable scratches or light bleed"         Tag="65"/>
@@ -662,8 +664,8 @@ function Calc-HardwareBaseValue {
                 </ComboBox>
 
                 <!-- Body -->
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Body / Chassis" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="2" Grid.Column="1" Name="CboBody" Style="{StaticResource DarkCombo}">
+                <TextBlock Grid.Row="10" Grid.Column="0" Text="Body / Chassis" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="10" Grid.Column="1" Name="CboBody" Style="{StaticResource DarkCombo}">
                   <ComboBoxItem Content="Like new (No dents or scratches)"   Tag="100" IsSelected="True"/>
                   <ComboBoxItem Content="Light scratches, no dents"            Tag="85"/>
                   <ComboBoxItem Content="Visible dents or chips"               Tag="60"/>
@@ -671,8 +673,8 @@ function Calc-HardwareBaseValue {
                 </ComboBox>
 
                 <!-- Keyboard -->
-                <TextBlock Grid.Row="4" Grid.Column="0" Text="Keyboard" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="4" Grid.Column="1" Name="CboKeyboard" Style="{StaticResource DarkCombo}">
+                <TextBlock Grid.Row="12" Grid.Column="0" Text="Keyboard" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="12" Grid.Column="1" Name="CboKeyboard" Style="{StaticResource DarkCombo}">
                   <ComboBoxItem Content="All keys work perfectly"              Tag="100" IsSelected="True"/>
                   <ComboBoxItem Content="Minor fade or slight sticking"        Tag="80"/>
                   <ComboBoxItem Content="1-2 keys faulty"                      Tag="55"/>
@@ -680,16 +682,16 @@ function Calc-HardwareBaseValue {
                 </ComboBox>
 
                 <!-- Ports -->
-                <TextBlock Grid.Row="6" Grid.Column="0" Text="Ports" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="6" Grid.Column="1" Name="CboPorts" Style="{StaticResource DarkCombo}">
+                <TextBlock Grid.Row="14" Grid.Column="0" Text="Ports" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="14" Grid.Column="1" Name="CboPorts" Style="{StaticResource DarkCombo}">
                   <ComboBoxItem Content="All ports functional"                  Tag="100" IsSelected="True"/>
                   <ComboBoxItem Content="One port loose or non-functional"      Tag="80"/>
                   <ComboBoxItem Content="Multiple ports faulty"                 Tag="50"/>
                 </ComboBox>
 
                 <!-- Webcam -->
-                <TextBlock Grid.Row="8" Grid.Column="0" Text="Webcam" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="8" Grid.Column="1" Name="CboWebcam" Style="{StaticResource DarkCombo}">
+                <TextBlock Grid.Row="16" Grid.Column="0" Text="Webcam" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="16" Grid.Column="1" Name="CboWebcam" Style="{StaticResource DarkCombo}">
                   <ComboBoxItem Content="Works fine"                             Tag="100" IsSelected="True"/>
                   <ComboBoxItem Content="Slightly blurry / intermittent"         Tag="70"/>
                   <ComboBoxItem Content="Not working"                            Tag="40"/>
@@ -697,8 +699,8 @@ function Calc-HardwareBaseValue {
                 </ComboBox>
 
                 <!-- Speakers -->
-                <TextBlock Grid.Row="10" Grid.Column="0" Text="Speakers" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
-                <ComboBox Grid.Row="10" Grid.Column="1" Name="CboSpeakers" Style="{StaticResource DarkCombo}">
+                <TextBlock Grid.Row="18" Grid.Column="0" Text="Speakers" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="18" Grid.Column="1" Name="CboSpeakers" Style="{StaticResource DarkCombo}">
                   <ComboBoxItem Content="Clear sound (Both speakers)"             Tag="100" IsSelected="True"/>
                   <ComboBoxItem Content="Slight distortion at high volume"       Tag="80"/>
                   <ComboBoxItem Content="One speaker not working"                Tag="55"/>
@@ -801,6 +803,10 @@ $LblCapDesign  = $window.FindName('LblCapDesign')
 $LblBatNote    = $window.FindName('LblBatNote')
 $StoragePanel  = $window.FindName('StoragePanel')
 $LblStoragePH  = $window.FindName('LblStoragePH')
+$CboAge        = $window.FindName('CboAge')
+$CboWarranty   = $window.FindName('CboWarranty')
+$CboAccessories= $window.FindName('CboAccessories')
+$CboBattery    = $window.FindName('CboBattery')
 $CboScreen     = $window.FindName('CboScreen')
 $CboBody       = $window.FindName('CboBody')
 $CboKeyboard   = $window.FindName('CboKeyboard')
@@ -1206,18 +1212,28 @@ $BtnCondition.Add_Click({
         return
     }
 
-    $combos = @($CboScreen, $CboBody, $CboKeyboard, $CboPorts, $CboWebcam, $CboSpeakers)
+    $combos = @($CboAge, $CboWarranty, $CboAccessories, $CboBattery, $CboScreen, $CboBody, $CboKeyboard, $CboPorts, $CboWebcam, $CboSpeakers)
     $scores = foreach ($c in $combos) {
         if ($c.SelectedItem) { [int]$c.SelectedItem.Tag } else { 80 }
     }
     $script:ConditionScore = [math]::Round(($scores | Measure-Object -Average).Average, 0)
     
     # Calculate Final Price
+    # Since Age/Warranty are in the survey, we don't multiply by a separate Age Decay anymore.
+    # We take the perfect MSRP, and apply the condition multiplier directly.
     $batPct    = if ($script:BatInfo.HealthPct -ge 0) { $script:BatInfo.HealthPct } else { 80 }
     $storScore = Calc-StorageScore $script:StorDrives
     $baseVal   = $script:BaseHardwareValue
 
-    $result    = Calc-Price $baseVal $batPct $storScore $script:ConditionScore
+    # Final formula: diagnostic health (50%) + condition survey (50%)
+    $diag  = ($batPct + $storScore) / 2
+    $total = ($diag * 0.5 + $script:ConditionScore * 0.5) / 100
+
+    $result = @{
+        Min        = [math]::Round(($baseVal * $total * 0.85) / 100) * 100
+        Max        = [math]::Round(($baseVal * $total * 1.05) / 100) * 100
+        OverallPct = [math]::Round($total * 100, 1)
+    }
 
     # Update UI
     $LblScore.Text      = ('{0}' -f $result.OverallPct) + '%'
