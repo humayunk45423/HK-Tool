@@ -1212,27 +1212,30 @@ $BtnCondition.Add_Click({
         return
     }
 
-    $combos = @($CboAge, $CboWarranty, $CboAccessories, $CboBattery, $CboScreen, $CboBody, $CboKeyboard, $CboPorts, $CboWebcam, $CboSpeakers)
+    $ageScore = if ($CboAge.SelectedItem) { [int]$CboAge.SelectedItem.Tag } else { 95 }
+    $ageMultiplier = $ageScore / 100.0
+
+    $combos = @($CboWarranty, $CboAccessories, $CboBattery, $CboScreen, $CboBody, $CboKeyboard, $CboPorts, $CboWebcam, $CboSpeakers)
     $scores = foreach ($c in $combos) {
-        if ($c.SelectedItem) { [int]$c.SelectedItem.Tag } else { 80 }
+        if ($c.SelectedItem) { [int]$c.SelectedItem.Tag } else { 100 }
     }
     $script:ConditionScore = [math]::Round(($scores | Measure-Object -Average).Average, 0)
     
     # Calculate Final Price
-    # Since Age/Warranty are in the survey, we don't multiply by a separate Age Decay anymore.
-    # We take the perfect MSRP, and apply the condition multiplier directly.
+    # MSRP is depreciated heavily by the Age multiplier
+    $ageDepreciatedValue = $script:BaseHardwareValue * $ageMultiplier
+
     $batPct    = if ($script:BatInfo.HealthPct -ge 0) { $script:BatInfo.HealthPct } else { 80 }
     $storScore = Calc-StorageScore $script:StorDrives
-    $baseVal   = $script:BaseHardwareValue
 
     # Final formula: diagnostic health (50%) + condition survey (50%)
     $diag  = ($batPct + $storScore) / 2
-    $total = ($diag * 0.5 + $script:ConditionScore * 0.5) / 100
+    $totalCondPct = ($diag * 0.5 + $script:ConditionScore * 0.5) / 100
 
     $result = @{
-        Min        = [math]::Round(($baseVal * $total * 0.85) / 100) * 100
-        Max        = [math]::Round(($baseVal * $total * 1.05) / 100) * 100
-        OverallPct = [math]::Round($total * 100, 1)
+        Min        = [math]::Round(($ageDepreciatedValue * $totalCondPct * 0.85) / 100) * 100
+        Max        = [math]::Round(($ageDepreciatedValue * $totalCondPct * 1.05) / 100) * 100
+        OverallPct = [math]::Round($totalCondPct * 100, 1)
     }
 
     # Update UI
