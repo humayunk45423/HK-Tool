@@ -341,7 +341,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase, Sys
           </Button>
           <Ellipse Name="StatusDot" Width="8" Height="8" Fill="{DynamicResource TextMuted}" Margin="0,0,12,0"/>
           <TextBlock Name="StatusText" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"
-                     Text="Ready -- click Run Full Scan"/>
+                     Text="Ready -- click Run Full Scan" MaxWidth="420" TextTrimming="CharacterEllipsis"/>
         </StackPanel>
       </Grid>
     </Border>
@@ -685,39 +685,39 @@ $BtnTheme.Add_Click({
     $bc = [Windows.Media.BrushConverter]::new()
     
     if ($script:isDarkMode) {
-        $window.Resources['AppBg'].Color       = $bc.ConvertFromString('#080808').Color
-        $window.Resources['CardBg'].Color      = $bc.ConvertFromString('#111111').Color
-        $window.Resources['BorderCol'].Color   = $bc.ConvertFromString('#2A2A2A').Color
-        $window.Resources['TextMain'].Color    = $bc.ConvertFromString('#E0E0E0').Color
-        $window.Resources['TextSec'].Color     = $bc.ConvertFromString('#C0C0C0').Color
-        $window.Resources['TextMuted'].Color   = $bc.ConvertFromString('#505050').Color
-        $window.Resources['TextDark'].Color    = $bc.ConvertFromString('#383838').Color
-        $window.Resources['BtnBg'].Color       = $bc.ConvertFromString('#E0E0E0').Color
-        $window.Resources['BtnHover'].Color    = $bc.ConvertFromString('#FFFFFF').Color
-        $window.Resources['BtnPress'].Color    = $bc.ConvertFromString('#B0B0B0').Color
-        $window.Resources['BtnText'].Color     = $bc.ConvertFromString('#080808').Color
-        $window.Resources['PopupBg'].Color     = $bc.ConvertFromString('#1A1A1A').Color
-        $window.Resources['PopupHover'].Color  = $bc.ConvertFromString('#333333').Color
-        $window.Resources['BarBg'].Color       = $bc.ConvertFromString('#1E1E1E').Color
-        $window.Resources['BarFg'].Color       = $bc.ConvertFromString('#E0E0E0').Color
-        $window.Resources['AccentGreen'].Color = $bc.ConvertFromString('#58D68D').Color
+        $window.Resources['AppBg']       = $bc.ConvertFromString('#09090B')
+        $window.Resources['CardBg']      = $bc.ConvertFromString('#18181B')
+        $window.Resources['BorderCol']   = $bc.ConvertFromString('#27272A')
+        $window.Resources['TextMain']    = $bc.ConvertFromString('#FAFAFA')
+        $window.Resources['TextSec']     = $bc.ConvertFromString('#A1A1AA')
+        $window.Resources['TextMuted']   = $bc.ConvertFromString('#71717A')
+        $window.Resources['TextDark']    = $bc.ConvertFromString('#3F3F46')
+        $window.Resources['BtnBg']       = $bc.ConvertFromString('#3B82F6')
+        $window.Resources['BtnHover']    = $bc.ConvertFromString('#60A5FA')
+        $window.Resources['BtnPress']    = $bc.ConvertFromString('#2563EB')
+        $window.Resources['BtnText']     = $bc.ConvertFromString('#FFFFFF')
+        $window.Resources['PopupBg']     = $bc.ConvertFromString('#18181B')
+        $window.Resources['PopupHover']  = $bc.ConvertFromString('#27272A')
+        $window.Resources['BarBg']       = $bc.ConvertFromString('#27272A')
+        $window.Resources['BarFg']       = $bc.ConvertFromString('#3B82F6')
+        $window.Resources['AccentGreen'] = $bc.ConvertFromString('#10B981')
     } else {
-        $window.Resources['AppBg'].Color       = $bc.ConvertFromString('#F4F6F8').Color
-        $window.Resources['CardBg'].Color      = $bc.ConvertFromString('#FFFFFF').Color
-        $window.Resources['BorderCol'].Color   = $bc.ConvertFromString('#E2E8F0').Color
-        $window.Resources['TextMain'].Color    = $bc.ConvertFromString('#0F172A').Color
-        $window.Resources['TextSec'].Color     = $bc.ConvertFromString('#334155').Color
-        $window.Resources['TextMuted'].Color   = $bc.ConvertFromString('#64748B').Color
-        $window.Resources['TextDark'].Color    = $bc.ConvertFromString('#94A3B8').Color
-        $window.Resources['BtnBg'].Color       = $bc.ConvertFromString('#0F172A').Color
-        $window.Resources['BtnHover'].Color    = $bc.ConvertFromString('#1E293B').Color
-        $window.Resources['BtnPress'].Color    = $bc.ConvertFromString('#334155').Color
-        $window.Resources['BtnText'].Color     = $bc.ConvertFromString('#F8FAFC').Color
-        $window.Resources['PopupBg'].Color     = $bc.ConvertFromString('#FFFFFF').Color
-        $window.Resources['PopupHover'].Color  = $bc.ConvertFromString('#F1F5F9').Color
-        $window.Resources['BarBg'].Color       = $bc.ConvertFromString('#E2E8F0').Color
-        $window.Resources['BarFg'].Color       = $bc.ConvertFromString('#0F172A').Color
-        $window.Resources['AccentGreen'].Color = $bc.ConvertFromString('#16A34A').Color
+        $window.Resources['AppBg']       = $bc.ConvertFromString('#FAFAFA')
+        $window.Resources['CardBg']      = $bc.ConvertFromString('#FFFFFF')
+        $window.Resources['BorderCol']   = $bc.ConvertFromString('#E4E4E7')
+        $window.Resources['TextMain']    = $bc.ConvertFromString('#09090B')
+        $window.Resources['TextSec']     = $bc.ConvertFromString('#52525B')
+        $window.Resources['TextMuted']   = $bc.ConvertFromString('#71717A')
+        $window.Resources['TextDark']    = $bc.ConvertFromString('#A1A1AA')
+        $window.Resources['BtnBg']       = $bc.ConvertFromString('#2563EB')
+        $window.Resources['BtnHover']    = $bc.ConvertFromString('#3B82F6')
+        $window.Resources['BtnPress']    = $bc.ConvertFromString('#1D4ED8')
+        $window.Resources['BtnText']     = $bc.ConvertFromString('#FFFFFF')
+        $window.Resources['PopupBg']     = $bc.ConvertFromString('#FFFFFF')
+        $window.Resources['PopupHover']  = $bc.ConvertFromString('#F4F4F5')
+        $window.Resources['BarBg']       = $bc.ConvertFromString('#E4E4E7')
+        $window.Resources['BarFg']       = $bc.ConvertFromString('#2563EB')
+        $window.Resources['AccentGreen'] = $bc.ConvertFromString('#10B981')
     }
 })
 
