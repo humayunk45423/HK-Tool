@@ -501,27 +501,8 @@ function Calc-HardwareBaseValue {
               </Border>
             </Grid>
 
-            <StackPanel Orientation="Horizontal">
-              <Button Name="BtnScan" Content="Run Full Scan"
-                      Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left"/>
-              <Button Name="BtnAdvancedInfo" Content="Advanced Details (msinfo32)"
-                      Background="{DynamicResource CardBg}" Foreground="{DynamicResource TextMain}"
-                      BorderBrush="{DynamicResource BorderCol}" BorderThickness="1"
-                      FontWeight="SemiBold" FontSize="14" Padding="32,14" Cursor="Hand" Margin="16,0,0,0">
-                <Button.Template>
-                  <ControlTemplate TargetType="Button">
-                    <Border Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="{TemplateBinding Padding}">
-                      <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                      <Trigger Property="IsMouseOver" Value="True">
-                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PopupHover}"/>
-                      </Trigger>
-                    </ControlTemplate.Triggers>
-                  </ControlTemplate>
-                </Button.Template>
-              </Button>
-            </StackPanel>
+            <Button Name="BtnScan" Content="Run Full Scan"
+                    Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left"/>
 
           </StackPanel>
         </ScrollViewer>
@@ -727,6 +708,37 @@ function Calc-HardwareBaseValue {
         </ScrollViewer>
       </TabItem>
 
+      <!-- System Details (populated after scan) -->
+      <TabItem Header="System Details" Name="TabSysDetails">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Margin="48,40,48,48">
+            <TextBlock Text="System Details" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,8"/>
+            <TextBlock Text="Full hardware &amp; system summary collected from Windows."
+                       Style="{StaticResource BodyText}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,32"/>
+            <TextBlock Name="LblSysDetailsPH" Style="{StaticResource BodyText}"
+                       Text="Run a scan first to see full system details." Foreground="{DynamicResource TextMuted}"/>
+            <!-- Grid of info rows built in code -->
+            <ItemsControl Name="SysDetailsPanel">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="0,0,0,1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="260"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Key}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}" Padding="0,10" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13"
+                               Foreground="{DynamicResource TextMain}" Padding="0,10" TextWrapping="Wrap"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
     </TabControl>
 
     <!-- Status bar -->
@@ -751,7 +763,9 @@ $StatusText    = $window.FindName('StatusText')
 $FooterText    = $window.FindName('FooterText')
 $BtnTheme      = $window.FindName('BtnTheme')
 $BtnScan       = $window.FindName('BtnScan')
-$BtnAdvancedInfo = $window.FindName('BtnAdvancedInfo')
+$TabSysDetails   = $window.FindName('TabSysDetails')
+$SysDetailsPanel = $window.FindName('SysDetailsPanel')
+$LblSysDetailsPH = $window.FindName('LblSysDetailsPH')
 $LblCPU        = $window.FindName('LblCPU')
 $LblGPU        = $window.FindName('LblGPU')
 $LblRAM        = $window.FindName('LblRAM')
@@ -834,16 +848,7 @@ $BtnTheme.Add_Click({
     }
 })
 
-# ---------------------------------------------------------------------------
-# Advanced Details button (msinfo32)
-# ---------------------------------------------------------------------------
-$BtnAdvancedInfo.Add_Click({
-    try {
-        Start-Process msinfo32.exe
-    } catch {
-        [System.Windows.MessageBox]::Show("Failed to launch System Information.", "Error", 'OK', 'Error')
-    }
-})
+# (BtnAdvancedInfo removed — inline System Details tab added instead)
 
 # ---------------------------------------------------------------------------
 # Scan button  --  FIXED: uses PowerShell.Create() + BeginInvoke() + DispatcherTimer
@@ -863,20 +868,44 @@ $BtnScan.Add_Click({
 
         # -- Battery -------------------------------------------------------
         function Get-BatteryInfo {
+            $design = 0; $full = 0; $cycles = -1; $health = -1
+
+            # Primary: WMI root\wmi (fast, no file I/O)
             try {
-                $tmp = "$env:TEMP\batreport_hktool.html"
-                powercfg /batteryreport /output $tmp 2>$null | Out-Null
-                if (Test-Path $tmp) {
-                    $html   = Get-Content $tmp -Raw -ErrorAction Stop
-                    $design = 0; $full = 0; $cycles = -1
-                    if ($html -match 'DESIGN CAPACITY.*?(?:\n.*?)*?([\d,]+)\s*mWh')       { $design  = [int]($Matches[1] -replace ',','') }
-                    if ($html -match 'FULL CHARGE CAPACITY.*?(?:\n.*?)*?([\d,]+)\s*mWh') { $full    = [int]($Matches[1] -replace ',','') }
-                    if ($html -match 'CYCLE COUNT.*?(?:\n.*?)*?<td>\s*([0-9]+)')         { $cycles  = [int]$Matches[1] }
-                    Remove-Item $tmp -Force -ErrorAction SilentlyContinue
-                    $health = if ($design -gt 0) { [math]::Round($full / $design * 100, 1) } else { -1 }
-                    return @{ DesignmWh=$design; FullmWh=$full; CycleCount=$cycles; HealthPct=$health }
+                $staticData = Get-WmiObject -Namespace root\wmi -Class BatteryStaticData -ErrorAction Stop | Select-Object -First 1
+                $fullCharge = Get-WmiObject -Namespace root\wmi -Class BatteryFullChargedCapacity -ErrorAction Stop | Select-Object -First 1
+                $cycleObj   = Get-WmiObject -Namespace root\wmi -Class BatteryCycleCount -ErrorAction SilentlyContinue | Select-Object -First 1
+
+                if ($staticData -and $staticData.DesignedCapacity -gt 0) {
+                    $design = [int]$staticData.DesignedCapacity
+                }
+                if ($fullCharge -and $fullCharge.FullChargedCapacity -gt 0) {
+                    $full = [int]$fullCharge.FullChargedCapacity
+                }
+                if ($cycleObj -and $null -ne $cycleObj.CycleCount) {
+                    $cycles = [int]$cycleObj.CycleCount
                 }
             } catch {}
+
+            # Fallback: powercfg HTML report (for cycle count and capacity if WMI gave nothing)
+            if ($design -le 0 -or $full -le 0) {
+                try {
+                    $tmp = "$env:TEMP\batreport_hktool.html"
+                    powercfg /batteryreport /output $tmp 2>$null | Out-Null
+                    if (Test-Path $tmp) {
+                        $html = Get-Content $tmp -Raw -ErrorAction Stop
+                        if ($design -le 0 -and $html -match 'DESIGN CAPACITY.*?([\d,]+)\s*mWh') { $design = [int]($Matches[1] -replace ',','') }
+                        if ($full   -le 0 -and $html -match 'FULL CHARGE CAPACITY.*?([\d,]+)\s*mWh') { $full = [int]($Matches[1] -replace ',','') }
+                        if ($cycles -lt 0 -and $html -match 'CYCLE COUNT.*?<td>\s*([0-9]+)') { $cycles = [int]$Matches[1] }
+                        Remove-Item $tmp -Force -ErrorAction SilentlyContinue
+                    }
+                } catch {}
+            }
+
+            if ($design -gt 0 -and $full -gt 0) {
+                $health = [math]::Round($full / $design * 100, 1)
+                return @{ DesignmWh=$design; FullmWh=$full; CycleCount=$cycles; HealthPct=$health }
+            }
             return @{ DesignmWh=0; FullmWh=0; CycleCount=-1; HealthPct=-1 }
         }
 
@@ -902,19 +931,45 @@ $BtnScan.Add_Click({
 
         # -- System --------------------------------------------------------
         function Get-SystemInfo {
-            $cpu  = (Get-CimInstance Win32_Processor       -ErrorAction SilentlyContinue | Select-Object -First 1).Name
-            $gpus = (Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue).Name -join ', '
-            $ram  = [math]::Round(
-                (Get-CimInstance Win32_PhysicalMemory -ErrorAction SilentlyContinue |
-                    Measure-Object -Property Capacity -Sum).Sum / 1GB, 0)
-            $os   = (Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue).Caption
-            $bios = (Get-CimInstance Win32_BIOS            -ErrorAction SilentlyContinue).ReleaseDate
+            $cpu     = (Get-CimInstance Win32_Processor       -ErrorAction SilentlyContinue | Select-Object -First 1)
+            $gpus    = (Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue).Name -join ', '
+            $ramObjs = Get-CimInstance Win32_PhysicalMemory   -ErrorAction SilentlyContinue
+            $ram     = [math]::Round(($ramObjs | Measure-Object -Property Capacity -Sum).Sum / 1GB, 0)
+            $os      = Get-CimInstance Win32_OperatingSystem  -ErrorAction SilentlyContinue
+            $bios    = Get-CimInstance Win32_BIOS             -ErrorAction SilentlyContinue
+            $cs      = Get-CimInstance Win32_ComputerSystem   -ErrorAction SilentlyContinue
+            $board   = Get-CimInstance Win32_BaseBoard        -ErrorAction SilentlyContinue
+            $disks   = Get-CimInstance Win32_DiskDrive        -ErrorAction SilentlyContinue
+            $net     = Get-CimInstance Win32_NetworkAdapterConfiguration -ErrorAction SilentlyContinue | Where-Object { $_.IPEnabled } | Select-Object -First 1
+
+            $ramSlots = ($ramObjs | ForEach-Object { "$([math]::Round($_.Capacity/1GB,0)) GB $($_.Speed) MHz" }) -join ' | '
+            $diskList = ($disks | ForEach-Object { "$($_.Model) ($([math]::Round($_.Size/1GB,0)) GB)" }) -join '; '
+
             return @{
-                CPU      = if ($cpu)  { $cpu }  else { 'Not detected' }
-                GPU      = if ($gpus) { $gpus } else { 'Not detected' }
-                RAM      = $ram
-                OS       = if ($os)   { $os }   else { 'Unknown' }
-                BIOSDate = if ($bios) { $bios.ToString('yyyy-MM-dd') } else { 'Unknown' }
+                CPU         = if ($cpu.Name)  { $cpu.Name }  else { 'Not detected' }
+                CPUCores    = if ($cpu.NumberOfCores) { "$($cpu.NumberOfCores) cores / $($cpu.NumberOfLogicalProcessors) threads" } else { 'N/A' }
+                CPUSpeed    = if ($cpu.MaxClockSpeed) { "$([math]::Round($cpu.MaxClockSpeed/1000,2)) GHz max" } else { 'N/A' }
+                GPU         = if ($gpus) { $gpus } else { 'Not detected' }
+                RAM         = $ram
+                RAMSlots    = if ($ramSlots) { $ramSlots } else { 'N/A' }
+                OS          = if ($os.Caption) { $os.Caption } else { 'Unknown' }
+                OSVersion   = if ($os.Version) { $os.Version } else { 'N/A' }
+                OSBuild     = if ($os.BuildNumber) { "Build $($os.BuildNumber)" } else { 'N/A' }
+                InstallDate = if ($os.InstallDate) { $os.InstallDate.ToString('yyyy-MM-dd') } else { 'N/A' }
+                LastBoot    = if ($os.LastBootUpTime) { $os.LastBootUpTime.ToString('yyyy-MM-dd HH:mm') } else { 'N/A' }
+                Uptime      = if ($os.LastBootUpTime) { $ts = (Get-Date) - $os.LastBootUpTime; "$($ts.Days)d $($ts.Hours)h $($ts.Minutes)m" } else { 'N/A' }
+                SystemName  = if ($cs.Name) { $cs.Name } else { 'N/A' }
+                Manufacturer = if ($cs.Manufacturer) { $cs.Manufacturer } else { 'N/A' }
+                Model       = if ($cs.Model) { $cs.Model } else { 'N/A' }
+                SystemType  = if ($cs.SystemType) { $cs.SystemType } else { 'N/A' }
+                BIOSDate    = if ($bios.ReleaseDate) { $bios.ReleaseDate.ToString('yyyy-MM-dd') } else { 'Unknown' }
+                BIOSVersion = if ($bios.SMBIOSBIOSVersion) { $bios.SMBIOSBIOSVersion } else { 'N/A' }
+                BIOSManuf   = if ($bios.Manufacturer) { $bios.Manufacturer } else { 'N/A' }
+                BoardManuf  = if ($board.Manufacturer) { $board.Manufacturer } else { 'N/A' }
+                BoardModel  = if ($board.Product) { $board.Product } else { 'N/A' }
+                Disks       = if ($diskList) { $diskList } else { 'N/A' }
+                MACAddress  = if ($net.MACAddress) { $net.MACAddress } else { 'N/A' }
+                IPAddress   = if ($net.IPAddress) { $net.IPAddress[0] } else { 'N/A' }
             }
         }
 
@@ -959,19 +1014,18 @@ $BtnScan.Add_Click({
 
             # -- Battery --
             $bat = $r.Bat
+            $bcB = [Windows.Media.BrushConverter]::new()
             if ($bat.HealthPct -ge 0) {
-                $LblBasePrice.Text = "Tk $($baseVal.ToString('N0'))"
+                $LblBatHealth.Text  = "$($bat.HealthPct)%"
                 $BarBatHealth.Value = [math]::Min($bat.HealthPct, 100)
 
-                # Color-code health
-                                $bc = [Windows.Media.BrushConverter]::new()
-                if ($bat.HealthPct -ge 80)      { $LblBatHealth.Foreground = $bc.ConvertFromString('#10B981') }
-                elseif ($bat.HealthPct -ge 60)  { $LblBatHealth.Foreground = $bc.ConvertFromString('#F59E0B') }
-                else                            { $LblBatHealth.Foreground = $bc.ConvertFromString('#EF4444') }
+                if ($bat.HealthPct -ge 80)     { $LblBatHealth.Foreground = $bcB.ConvertFromString('#10B981') }
+                elseif ($bat.HealthPct -ge 60) { $LblBatHealth.Foreground = $bcB.ConvertFromString('#F59E0B') }
+                else                           { $LblBatHealth.Foreground = $bcB.ConvertFromString('#EF4444') }
 
-                $LblCycles.Text = if ($bat.CycleCount -ge 0) { [string]$bat.CycleCount } else { 'N/A' }
-                $LblCapNow.Text    = if ($bat.FullmWh   -gt 0) { "$([math]::Round($bat.FullmWh/1000,1)) Wh" }   else { 'N/A' }
-                $LblCapDesign.Text = if ($bat.DesignmWh -gt 0) { "Design capacity: $([math]::Round($bat.DesignmWh/1000,1)) Wh" } else { '' }
+                $LblCycles.Text    = if ($bat.CycleCount -ge 0) { [string]$bat.CycleCount } else { 'Not reported' }
+                $LblCapNow.Text    = if ($bat.FullmWh   -gt 0) { "$([math]::Round($bat.FullmWh/1000,1)) Wh" } else { 'N/A' }
+                $LblCapDesign.Text = if ($bat.DesignmWh -gt 0) { "Design: $([math]::Round($bat.DesignmWh/1000,1)) Wh" } else { '' }
 
                 $LblBatNote.Text = switch -exact ($true) {
                     ($bat.HealthPct -ge 90) { 'Excellent -- battery is in great shape.' }
@@ -982,6 +1036,8 @@ $BtnScan.Add_Click({
             } else {
                 $LblBatHealth.Text = 'N/A'
                 $LblBatNote.Text   = 'No battery detected -- may be a desktop, or report could not be generated.'
+                $LblCycles.Text    = 'N/A'
+                $LblCapNow.Text    = 'N/A'
             }
 
             # -- Storage -- remove old drive cards first
@@ -1040,8 +1096,43 @@ $BtnScan.Add_Click({
 
             # Calculate Automated Base Price
             $script:BaseHardwareValue = Calc-HardwareBaseValue $r.Sys.CPU $r.Sys.RAM $r.Sys.GPU $r.Stor
-            $LblBasePrice.Text = "$("{0:N0}" -f $script:BaseHardwareValue) Tk"
+            $LblBasePrice.Text = "Tk $("{0:N0}" -f $script:BaseHardwareValue)"
             $script:scanDone = $true
+
+            # -- Populate System Details tab --
+            $LblSysDetailsPH.Visibility = 'Collapsed'
+            $s = $r.Sys
+            $rows = [System.Collections.ObjectModel.ObservableCollection[object]]::new()
+            @(
+                [PSCustomObject]@{ Key='OS Name';              Value=$s.OS }
+                [PSCustomObject]@{ Key='OS Version';           Value=$s.OSVersion }
+                [PSCustomObject]@{ Key='OS Build';             Value=$s.OSBuild }
+                [PSCustomObject]@{ Key='Install Date';         Value=$s.InstallDate }
+                [PSCustomObject]@{ Key='Last Boot';            Value=$s.LastBoot }
+                [PSCustomObject]@{ Key='Uptime';               Value=$s.Uptime }
+                [PSCustomObject]@{ Key='';                     Value='' }
+                [PSCustomObject]@{ Key='System Name';          Value=$s.SystemName }
+                [PSCustomObject]@{ Key='Manufacturer';         Value=$s.Manufacturer }
+                [PSCustomObject]@{ Key='Model';                Value=$s.Model }
+                [PSCustomObject]@{ Key='System Type';          Value=$s.SystemType }
+                [PSCustomObject]@{ Key='';                     Value='' }
+                [PSCustomObject]@{ Key='Processor';            Value=$s.CPU }
+                [PSCustomObject]@{ Key='CPU Cores / Threads';  Value=$s.CPUCores }
+                [PSCustomObject]@{ Key='CPU Max Speed';        Value=$s.CPUSpeed }
+                [PSCustomObject]@{ Key='Graphics';             Value=$s.GPU }
+                [PSCustomObject]@{ Key='RAM Installed';        Value="$($s.RAM) GB" }
+                [PSCustomObject]@{ Key='RAM Slots';            Value=$s.RAMSlots }
+                [PSCustomObject]@{ Key='Storage Drives';       Value=$s.Disks }
+                [PSCustomObject]@{ Key='';                     Value='' }
+                [PSCustomObject]@{ Key='BIOS Version';         Value=$s.BIOSVersion }
+                [PSCustomObject]@{ Key='BIOS Date';            Value=$s.BIOSDate }
+                [PSCustomObject]@{ Key='BIOS Manufacturer';    Value=$s.BIOSManuf }
+                [PSCustomObject]@{ Key='Motherboard';          Value="$($s.BoardManuf) $($s.BoardModel)" }
+                [PSCustomObject]@{ Key='';                     Value='' }
+                [PSCustomObject]@{ Key='MAC Address';          Value=$s.MACAddress }
+                [PSCustomObject]@{ Key='IP Address';           Value=$s.IPAddress }
+            ) | ForEach-Object { $rows.Add($_) }
+            $SysDetailsPanel.ItemsSource = $rows
 
             # Update status
             $bcDone           = [Windows.Media.BrushConverter]::new()
@@ -1087,14 +1178,14 @@ $BtnCondition.Add_Click({
 
     # Update UI
     $LblScore.Text      = "$($result.OverallPct)%"
-    $LblScoreSub.Text   = "Battery $($bat.HealthPct)%  |  Storage $($storScore)/100  |  Condition $($condScore)/100"
-    $LblPriceRange.Text = "Tk $($priceRes.Min.ToString('N0')) -- Tk $($priceRes.Max.ToString('N0'))"
-    $LblPriceNote.Text  = "Based on automated hardware base value of Tk $($baseVal.ToString('N0'))"
-    
+    $LblScoreSub.Text   = "Battery $([math]::Round($batPct,0))%  |  Storage $storScore/100  |  Condition $($script:ConditionScore)/100"
+    $LblPriceRange.Text = "Tk $("{0:N0}" -f $result.Min)  --  Tk $("{0:N0}" -f $result.Max)"
+    $LblPriceNote.Text  = "Based on automated hardware base value of Tk $("{0:N0}" -f $baseVal)"
+
     $PriceCard.Visibility = 'Visible'
     $BtnExportJSON.Visibility = 'Visible'
-    $StatusText.Text    = "Price estimate ready"
-    $MainTabs.SelectedIndex  = 4
+    $StatusText.Text    = 'Price estimate ready'
+    $MainTabs.SelectedIndex = 4
 })
 
 # ---------------------------------------------------------------------------
