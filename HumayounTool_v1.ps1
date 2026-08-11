@@ -501,8 +501,27 @@ function Calc-HardwareBaseValue {
               </Border>
             </Grid>
 
-            <Button Name="BtnScan" Content="Run Full Scan"
-                    Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left"/>
+            <StackPanel Orientation="Horizontal">
+              <Button Name="BtnScan" Content="Run Full Scan"
+                      Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left"/>
+              <Button Name="BtnAdvancedInfo" Content="Advanced Details (msinfo32)"
+                      Background="{DynamicResource CardBg}" Foreground="{DynamicResource TextMain}"
+                      BorderBrush="{DynamicResource BorderCol}" BorderThickness="1"
+                      FontWeight="SemiBold" FontSize="14" Padding="32,14" Cursor="Hand" Margin="16,0,0,0">
+                <Button.Template>
+                  <ControlTemplate TargetType="Button">
+                    <Border Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                      <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PopupHover}"/>
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </Button.Template>
+              </Button>
+            </StackPanel>
 
           </StackPanel>
         </ScrollViewer>
@@ -726,16 +745,6 @@ function Calc-HardwareBaseValue {
 $reader = [System.Xml.XmlNodeReader]::new($xaml)
 $window = [Windows.Markup.XamlReader]::Load($reader)
 
-$MainTabs      = $window.FindName('MainTabs')
-$StatusDot     = $window.FindName('StatusDot')
-$StatusText    = $window.FindName('StatusText')
-$FooterText    = $window.FindName('FooterText')
-$BtnTheme      = $window.FindName('BtnTheme')
-$BtnScan       = $window.FindName('BtnScan')
-$LblCPU        = $window.FindName('LblCPU')
-$LblGPU        = $window.FindName('LblGPU')
-$LblRAM        = $window.FindName('LblRAM')
-$LblBIOS       = $window.FindName('LblBIOS')
 $LblOS         = $window.FindName('LblOS')
 $LblBatHealth  = $window.FindName('LblBatHealth')
 $BarBatHealth  = $window.FindName('BarBatHealth')
@@ -811,6 +820,17 @@ $BtnTheme.Add_Click({
         $window.Resources['BarBg']       = $bc.ConvertFromString('#E4E4E7')
         $window.Resources['BarFg']       = $bc.ConvertFromString('#2563EB')
         $window.Resources['AccentGreen'] = $bc.ConvertFromString('#10B981')
+    }
+})
+
+# ---------------------------------------------------------------------------
+# Advanced Details button (msinfo32)
+# ---------------------------------------------------------------------------
+$BtnAdvancedInfo.Add_Click({
+    try {
+        Start-Process msinfo32.exe
+    } catch {
+        [System.Windows.MessageBox]::Show("Failed to launch System Information.", "Error", 'OK', 'Error')
     }
 })
 
