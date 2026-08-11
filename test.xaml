@@ -1,0 +1,645 @@
+﻿<Window
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  Title="Humayoun Kobir Tool"
+  Width="1024" Height="768"
+  MinWidth="900" MinHeight="650"
+  WindowStartupLocation="CenterScreen"
+  Background="{DynamicResource AppBg}"
+  Foreground="{DynamicResource TextMain}"
+  FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"
+  SnapsToDevicePixels="True"
+  UseLayoutRounding="True">
+
+  <Window.Resources>
+    <SolidColorBrush x:Key="AppBg" Color="#09090B"/>
+    <SolidColorBrush x:Key="CardBg" Color="#18181B"/>
+    <SolidColorBrush x:Key="BorderCol" Color="#27272A"/>
+    <SolidColorBrush x:Key="TextMain" Color="#FAFAFA"/>
+    <SolidColorBrush x:Key="TextSec" Color="#A1A1AA"/>
+    <SolidColorBrush x:Key="TextMuted" Color="#71717A"/>
+    <SolidColorBrush x:Key="TextDark" Color="#3F3F46"/>
+    <SolidColorBrush x:Key="BtnBg" Color="#3B82F6"/>
+    <SolidColorBrush x:Key="BtnHover" Color="#60A5FA"/>
+    <SolidColorBrush x:Key="BtnPress" Color="#2563EB"/>
+    <SolidColorBrush x:Key="BtnText" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="PopupBg" Color="#18181B"/>
+    <SolidColorBrush x:Key="PopupHover" Color="#27272A"/>
+    <SolidColorBrush x:Key="BarBg" Color="#27272A"/>
+    <SolidColorBrush x:Key="BarFg" Color="#3B82F6"/>
+    <SolidColorBrush x:Key="AccentGreen" Color="#10B981"/>
+
+    <Style x:Key="Card" TargetType="Border">
+      <Setter Property="Background"       Value="{DynamicResource CardBg}"/>
+      <Setter Property="BorderBrush"      Value="{DynamicResource BorderCol}"/>
+      <Setter Property="BorderThickness"  Value="1"/>
+      <Setter Property="CornerRadius"     Value="16"/>
+      <Setter Property="Padding"          Value="28"/>
+      <Setter Property="Effect">
+        <Setter.Value>
+          <DropShadowEffect BlurRadius="25" ShadowDepth="6" Direction="270" Color="#000000" Opacity="0.15"/>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="FieldLabel" TargetType="TextBlock">
+      <Setter Property="FontSize"    Value="12"/>
+      <Setter Property="FontWeight"  Value="SemiBold"/>
+      <Setter Property="Foreground"  Value="{DynamicResource TextMuted}"/>
+      <Setter Property="Margin"      Value="0,0,0,6"/>
+    </Style>
+
+    <Style x:Key="BigNum" TargetType="TextBlock">
+      <Setter Property="FontSize"   Value="34"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+      <Setter Property="Margin"     Value="0,0,0,4"/>
+    </Style>
+
+    <Style x:Key="BodyText" TargetType="TextBlock">
+      <Setter Property="FontSize"      Value="15"/>
+      <Setter Property="Foreground"    Value="{DynamicResource TextSec}"/>
+      <Setter Property="TextWrapping"  Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="PrimaryBtn" TargetType="Button">
+      <Setter Property="Background"      Value="{DynamicResource BtnBg}"/>
+      <Setter Property="Foreground"      Value="{DynamicResource BtnText}"/>
+      <Setter Property="FontWeight"      Value="Bold"/>
+      <Setter Property="FontSize"        Value="14"/>
+      <Setter Property="Padding"         Value="32,14"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Cursor"          Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Name="Bd" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}" RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform>
+                <ScaleTransform ScaleX="1" ScaleY="1" />
+              </Border.RenderTransform>
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              <Border.Effect>
+                 <DropShadowEffect BlurRadius="15" ShadowDepth="4" Opacity="0.25" Color="#000000" Direction="270" />
+              </Border.Effect>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BtnHover}"/>
+                <Trigger.EnterActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="Bd" Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)" To="1.03" Duration="0:0:0.15">
+                         <DoubleAnimation.EasingFunction>
+                            <QuadraticEase EasingMode="EaseOut"/>
+                         </DoubleAnimation.EasingFunction>
+                      </DoubleAnimation>
+                      <DoubleAnimation Storyboard.TargetName="Bd" Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)" To="1.03" Duration="0:0:0.15">
+                         <DoubleAnimation.EasingFunction>
+                            <QuadraticEase EasingMode="EaseOut"/>
+                         </DoubleAnimation.EasingFunction>
+                      </DoubleAnimation>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                  <BeginStoryboard>
+                    <Storyboard>
+                      <DoubleAnimation Storyboard.TargetName="Bd" Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                      <DoubleAnimation Storyboard.TargetName="Bd" Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+                    </Storyboard>
+                  </BeginStoryboard>
+                </Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BtnPress}"/>
+                <Setter TargetName="Bd" Property="RenderTransform">
+                  <Setter.Value>
+                    <ScaleTransform ScaleX="0.97" ScaleY="0.97" />
+                  </Setter.Value>
+                </Setter>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource BarBg}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextDark}"/>
+                <Setter TargetName="Bd" Property="Effect" Value="{x:Null}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="DarkCombo" TargetType="ComboBox">
+      <Setter Property="Background" Value="{DynamicResource CardBg}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderCol}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="Padding" Value="14,10"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ComboBox">
+            <Grid>
+              <ToggleButton x:Name="ToggleButton" 
+                            Focusable="false"
+                            IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
+                            ClickMode="Press">
+                <ToggleButton.Template>
+                  <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Bd" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1" CornerRadius="8">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition />
+                          <ColumnDefinition Width="36" />
+                        </Grid.ColumnDefinitions>
+                        <Path Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                              Data="M 0 0 L 5 5 L 10 0 Z" Fill="{DynamicResource TextMuted}" />
+                      </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource PopupHover}" TargetName="Bd" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource TextMuted}" TargetName="Bd" />
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </ToggleButton.Template>
+              </ToggleButton>
+              <ContentPresenter x:Name="ContentSite"
+                                IsHitTestVisible="False" 
+                                Content="{TemplateBinding SelectionBoxItem}"
+                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                Margin="14,10,36,10"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left" />
+              <Popup x:Name="Popup" 
+                     Placement="Bottom"
+                     IsOpen="{TemplateBinding IsDropDownOpen}"
+                     AllowsTransparency="True" 
+                     Focusable="False"
+                     PopupAnimation="Slide">
+                <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                  <Border x:Name="DropDownBorder" Background="{DynamicResource PopupBg}" BorderThickness="1" BorderBrush="{DynamicResource BorderCol}" CornerRadius="8" Margin="0,4,0,12">
+                    <Border.Effect>
+                      <DropShadowEffect BlurRadius="20" ShadowDepth="8" Opacity="0.3" Color="#000000" Direction="270"/>
+                    </Border.Effect>
+                  </Border>
+                  <ScrollViewer Margin="1,5,1,13" SnapsToDevicePixels="True">
+                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                  </ScrollViewer>
+                </Grid>
+              </Popup>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="ItemContainerStyle">
+        <Setter.Value>
+          <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="{DynamicResource PopupBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+              <Trigger Property="IsHighlighted" Value="True">
+                <Setter Property="Background" Value="{DynamicResource PopupHover}"/>
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="SlimBar" TargetType="ProgressBar">
+      <Setter Property="Background"       Value="{DynamicResource BarBg}"/>
+      <Setter Property="Foreground"       Value="{DynamicResource BtnBg}"/>
+      <Setter Property="Height"           Value="8"/>
+      <Setter Property="BorderThickness"  Value="0"/>
+      <Setter Property="Maximum"          Value="100"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ProgressBar">
+            <Border Background="{TemplateBinding Background}" CornerRadius="4">
+              <Grid>
+                <Border Name="PART_Track"/>
+                <Border Name="PART_Indicator" Background="{TemplateBinding Foreground}" CornerRadius="4" HorizontalAlignment="Left" />
+              </Grid>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Custom tab strip -->
+    <Style TargetType="TabItem">
+      <Setter Property="FontSize"    Value="15"/>
+      <Setter Property="FontWeight"  Value="SemiBold"/>
+      <Setter Property="Foreground"  Value="{DynamicResource TextMuted}"/>
+      <Setter Property="Padding"     Value="0"/>
+      <Setter Property="Cursor"      Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TabItem">
+            <Border Name="Bd" Padding="24,16" BorderThickness="0,0,0,3" BorderBrush="Transparent" Background="Transparent" Margin="0,0,8,0">
+              <ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BtnBg}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+              </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource TextMain}"/>
+                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PopupHover}"/>
+                <Setter TargetName="Bd" Property="CornerRadius" Value="8,8,0,0"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Tab control chrome -->
+    <Style TargetType="TabControl">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TabControl">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+              </Grid.RowDefinitions>
+              <Border Grid.Row="0" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="0,0,0,1">
+                <TabPanel IsItemsHost="True" Background="Transparent" Margin="24,0,0,0"/>
+              </Border>
+              <Border Grid.Row="1" Background="Transparent">
+                <ContentPresenter ContentSource="SelectedContent"/>
+              </Border>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+  </Window.Resources>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="64"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="42"/>
+    </Grid.RowDefinitions>
+
+    <!-- Header -->
+    <Border Grid.Row="0" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="0,0,0,1">
+      <Grid Margin="32,0">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <Border Width="36" Height="36" CornerRadius="10" Margin="0,0,16,0">
+            <Border.Effect>
+              <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3" Color="#000000"/>
+            </Border.Effect>
+            <Border.Background>
+              <ImageBrush ImageSource="https://raw.githubusercontent.com/humayunk45423/HK-Tool/main/logo.png" Stretch="UniformToFill"/>
+            </Border.Background>
+          </Border>
+          <TextBlock Text="Humayoun Kobir Tool" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+          <Border Background="{DynamicResource PopupBg}" CornerRadius="6" Margin="12,0,0,0" Padding="8,4" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1">
+            <TextBlock Text="v1.0" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" FontFamily="Consolas"/>
+          </Border>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <Button Name="BtnTheme" Content="&#xE706;" FontFamily="Segoe MDL2 Assets" FontSize="16" Width="36" Height="36" Background="{DynamicResource PopupBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="1" Foreground="{DynamicResource TextMain}" Cursor="Hand" Margin="0,0,24,0" ToolTip="Toggle Light/Dark Theme">
+            <Button.Template>
+              <ControlTemplate TargetType="Button">
+                <Border Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="18">
+                  <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PopupHover}"/>
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Button.Template>
+          </Button>
+          <Ellipse Name="StatusDot" Width="8" Height="8" Fill="{DynamicResource TextMuted}" Margin="0,0,12,0"/>
+          <TextBlock Name="StatusText" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"
+                     Text="Ready -- click Run Full Scan" MaxWidth="420" TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Main tabs -->
+    <TabControl Grid.Row="1" Name="MainTabs">
+
+      <!-- Overview -->
+      <TabItem Header="Overview">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Margin="48,40,48,48">
+
+            <TextBlock Text="System Overview" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,32"/>
+
+            <!-- CPU + GPU row -->
+            <Grid Margin="0,0,0,16">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <Border Grid.Column="0" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="PROCESSOR" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblCPU" Style="{StaticResource BodyText}" Text="Not scanned yet" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}"/>
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="2" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="GRAPHICS" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblGPU" Style="{StaticResource BodyText}" Text="Not scanned yet" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <!-- RAM + BIOS + OS row -->
+            <Grid Margin="0,0,0,32">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.6*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Border Grid.Column="0" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="RAM" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblRAM" Style="{StaticResource BigNum}" Text="--"/>
+                  <TextBlock Text="GB installed" FontSize="13" Foreground="{DynamicResource TextMuted}"/>
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="2" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="BIOS DATE" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblBIOS" Style="{StaticResource BodyText}" Text="--" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}"/>
+                  <TextBlock Text="approx. manufacture date" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,6,0,0"/>
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="4" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="OPERATING SYSTEM" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblOS" Style="{StaticResource BodyText}" Text="--" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <Button Name="BtnScan" Content="Run Full Scan"
+                    Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left"/>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- System Details (populated after scan) -->
+      <TabItem Header="System Details" Name="TabSysDetails">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Margin="48,40,48,48">
+            <TextBlock Text="System Details" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,8"/>
+            <TextBlock Text="Full hardware &amp; system summary collected from Windows."
+                       Style="{StaticResource BodyText}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,32"/>
+            <TextBlock Name="LblSysDetailsPH" Style="{StaticResource BodyText}"
+                       Text="Run a scan first to see full system details." Foreground="{DynamicResource TextMuted}"/>
+            <!-- Grid of info rows built in code -->
+            <ItemsControl Name="SysDetailsPanel">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="0,0,0,1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="260"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Key}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMuted}" Padding="0,10" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="13"
+                               Foreground="{DynamicResource TextMain}" Padding="0,10" TextWrapping="Wrap"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Battery -->
+      <TabItem Header="Battery">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Margin="48,40,48,48">
+
+            <TextBlock Text="Battery Health" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,32"/>
+
+            <Grid Margin="0,0,0,16">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+
+              <Border Grid.Column="0" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="HEALTH" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblBatHealth" Style="{StaticResource BigNum}" Text="--"/>
+                  <ProgressBar Name="BarBatHealth" Style="{StaticResource SlimBar}" Margin="0,12,0,0"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="2" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="CYCLE COUNT" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblCycles" Style="{StaticResource BigNum}" Text="--"/>
+                  <TextBlock Text="charge cycles" FontSize="13" Foreground="{DynamicResource TextMuted}"/>
+                </StackPanel>
+              </Border>
+
+              <Border Grid.Column="4" Style="{StaticResource Card}">
+                <StackPanel>
+                  <TextBlock Text="CAPACITY" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblCapNow" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextMain}" Margin="0,0,0,4"/>
+                  <TextBlock Text="current full charge" FontSize="13" Foreground="{DynamicResource TextMuted}"/>
+                  <TextBlock Name="LblCapDesign" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,8,0,0"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}">
+              <StackPanel>
+                <TextBlock Text="CONDITION SUMMARY" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Name="LblBatNote" Style="{StaticResource BodyText}"
+                           Text="Run a scan to see battery health notes."/>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Storage -->
+      <TabItem Header="Storage">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Name="StoragePanel" Margin="48,40,48,48">
+            <TextBlock Text="Storage Health" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,32"/>
+            <TextBlock Name="LblStoragePH" Style="{StaticResource BodyText}"
+                       Text="Run a scan to see storage details." Foreground="{DynamicResource TextMuted}"/>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Condition Survey -->
+      <TabItem Header="Condition Survey">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Margin="48,40,48,48">
+
+            <TextBlock Text="Condition Survey" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,8"/>
+            <TextBlock Text="Answer honestly -- this affects your price estimate."
+                       Style="{StaticResource BodyText}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,32"/>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,24">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="320"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition/><RowDefinition Height="20"/><RowDefinition/>
+                  <RowDefinition Height="20"/><RowDefinition/>
+                  <RowDefinition Height="20"/><RowDefinition/>
+                  <RowDefinition Height="20"/><RowDefinition/>
+                  <RowDefinition Height="20"/><RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <!-- Screen -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Screen Display" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" Name="CboScreen" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="Perfect (No scratches, no dead pixels)"   Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="Minor scratches (Barely visible)"           Tag="85"/>
+                  <ComboBoxItem Content="Noticeable scratches or light bleed"         Tag="65"/>
+                  <ComboBoxItem Content="Crack or significant damage"                 Tag="30"/>
+                </ComboBox>
+
+                <!-- Body -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Body / Chassis" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="2" Grid.Column="1" Name="CboBody" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="Like new (No dents or scratches)"   Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="Light scratches, no dents"            Tag="85"/>
+                  <ComboBoxItem Content="Visible dents or chips"               Tag="60"/>
+                  <ComboBoxItem Content="Cracked or heavily damaged"           Tag="25"/>
+                </ComboBox>
+
+                <!-- Keyboard -->
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Keyboard" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="4" Grid.Column="1" Name="CboKeyboard" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="All keys work perfectly"              Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="Minor fade or slight sticking"        Tag="80"/>
+                  <ComboBoxItem Content="1-2 keys faulty"                      Tag="55"/>
+                  <ComboBoxItem Content="Multiple keys not working"            Tag="20"/>
+                </ComboBox>
+
+                <!-- Ports -->
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="Ports" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="6" Grid.Column="1" Name="CboPorts" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="All ports functional"                  Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="One port loose or non-functional"      Tag="80"/>
+                  <ComboBoxItem Content="Multiple ports faulty"                 Tag="50"/>
+                </ComboBox>
+
+                <!-- Webcam -->
+                <TextBlock Grid.Row="8" Grid.Column="0" Text="Webcam" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="8" Grid.Column="1" Name="CboWebcam" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="Works fine"                             Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="Slightly blurry / intermittent"         Tag="70"/>
+                  <ComboBoxItem Content="Not working"                            Tag="40"/>
+                  <ComboBoxItem Content="No webcam (Desktop)"                   Tag="90"/>
+                </ComboBox>
+
+                <!-- Speakers -->
+                <TextBlock Grid.Row="10" Grid.Column="0" Text="Speakers" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextMain}" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="10" Grid.Column="1" Name="CboSpeakers" Style="{StaticResource DarkCombo}">
+                  <ComboBoxItem Content="Clear sound (Both speakers)"             Tag="100" IsSelected="True"/>
+                  <ComboBoxItem Content="Slight distortion at high volume"       Tag="80"/>
+                  <ComboBoxItem Content="One speaker not working"                Tag="55"/>
+                  <ComboBoxItem Content="No audio"                               Tag="20"/>
+                </ComboBox>
+
+              </Grid>
+            </Border>
+
+            <Button Name="BtnCondition" Content="Calculate Condition Score"
+                    Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left"/>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Price Estimate -->
+      <TabItem Header="Price Estimate">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="Transparent">
+          <StackPanel Margin="48,40,48,48">
+
+            <TextBlock Text="Resale Price Estimate" FontSize="26" FontWeight="Bold"
+                       Foreground="{DynamicResource TextMain}" Margin="0,0,0,8"/>
+            <TextBlock Text="Based on real-time automated hardware valuation."
+                       Style="{StaticResource BodyText}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,32"/>
+
+            <TextBlock Text="CALCULATED BASE HARDWARE VALUE (BDT)" Style="{StaticResource FieldLabel}"/>
+            <TextBlock Name="LblBasePrice" FontSize="42" FontWeight="Bold" Text="-- Tk" Foreground="{DynamicResource TextMain}" Margin="0,4,0,4"/>
+            <TextBlock Text="Automatically determined from CPU, RAM, Storage, and GPU." FontSize="13"
+                       Foreground="{DynamicResource TextMuted}" Margin="0,0,0,32"/>
+
+            <!-- Result card -->
+            <Border Name="PriceCard" Style="{StaticResource Card}" Visibility="Collapsed">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition/>
+                  <ColumnDefinition Width="1"/>
+                  <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,32,0" VerticalAlignment="Center">
+                  <TextBlock Text="OVERALL SCORE" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblScore" Style="{StaticResource BigNum}" Foreground="{DynamicResource BtnBg}"/>
+                  <TextBlock Name="LblScoreSub" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <Border Grid.Column="1" Background="{DynamicResource BorderCol}" Width="1"/>
+
+                <StackPanel Grid.Column="2" Margin="32,0,0,0" VerticalAlignment="Center">
+                  <TextBlock Text="FAIR RESALE RANGE" Style="{StaticResource FieldLabel}"/>
+                  <TextBlock Name="LblPriceRange" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" Margin="0,4,0,12"/>
+                  <TextBlock Name="LblPriceNote" FontSize="13" Foreground="{DynamicResource TextMuted}" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Button Name="BtnExportJSON" Content="Export to JSON" Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Left" Margin="0,24,0,0" Visibility="Collapsed"/>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+    </TabControl>
+
+    <!-- Status bar -->
+    <Border Grid.Row="2" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource BorderCol}" BorderThickness="0,1,0,0" Padding="32,0">
+      <TextBlock Name="FooterText" FontSize="12" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontWeight="SemiBold"
+                 Text="Humayoun Kobir Tool v1.0   Windows Only   Open Source"/>
+    </Border>
+
+  </Grid>
+</Window>
