@@ -810,9 +810,15 @@ $script:scanDone       = $false
 $script:isDarkMode = $true
 $BtnTheme.Add_Click({
     $script:isDarkMode = -not $script:isDarkMode
+    
+    # Smooth fade animation
+    $anim = [Windows.Media.Animation.DoubleAnimation]::new(0.6, 1.0, [Windows.Duration]::new([TimeSpan]::FromMilliseconds(250)))
+    $window.BeginAnimation([Windows.UIElement]::OpacityProperty, $anim)
+
     $bc = [Windows.Media.BrushConverter]::new()
     
     if ($script:isDarkMode) {
+        $BtnTheme.Content = [char]0xE706
         $window.Resources['AppBg']       = $bc.ConvertFromString('#09090B')
         $window.Resources['CardBg']      = $bc.ConvertFromString('#18181B')
         $window.Resources['BorderCol']   = $bc.ConvertFromString('#27272A')
@@ -830,6 +836,7 @@ $BtnTheme.Add_Click({
         $window.Resources['BarFg']       = $bc.ConvertFromString('#3B82F6')
         $window.Resources['AccentGreen'] = $bc.ConvertFromString('#10B981')
     } else {
+        $BtnTheme.Content = [char]0xE708
         $window.Resources['AppBg']       = $bc.ConvertFromString('#FAFAFA')
         $window.Resources['CardBg']      = $bc.ConvertFromString('#FFFFFF')
         $window.Resources['BorderCol']   = $bc.ConvertFromString('#E4E4E7')
